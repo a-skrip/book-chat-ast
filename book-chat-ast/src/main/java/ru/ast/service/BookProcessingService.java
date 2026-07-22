@@ -18,11 +18,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BookProcessingService {
 
-    private final TextChunkingService chunkingService;
+    private final LangChainChunkingService chunkingService;
     private final VectorStore vectorStore;
     private final BookRepository bookRepository;
 
-    private static final int BATCH_SIZE = 3;
+    private static final int BATCH_SIZE = 10;
 
     @Transactional
     public void processBook(UUID bookId) {

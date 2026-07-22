@@ -26,7 +26,7 @@ public class Book {
     @Column(nullable = false, length = 50)
     private String title;
 
-//    @Lob
+
     @Column(columnDefinition = "TEXT", name = "full_text")
     private String fullText;
 
@@ -44,9 +44,6 @@ public class Book {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public Book(String title, String fullText, String uploadPath) {
-        this.title = title;
-        this.fullText = fullText;
-        this.uploadPath = uploadPath;
-    }
+//    @OneToMany(mappedBy = "book", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<BookChunk> chunks = new ArrayList<>();
 }
