@@ -10,6 +10,6 @@ public class ChunkingConfig {
 
     @Bean
     public DocumentSplitter documentSplitter() {
-        return DocumentSplitters.recursive(1500, 300);
+        return DocumentSplitters.recursive(800, 160);
     }
 }

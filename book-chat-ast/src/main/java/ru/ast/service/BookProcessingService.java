@@ -22,7 +22,7 @@ public class BookProcessingService {
     private final VectorStore vectorStore;
     private final BookRepository bookRepository;
 
-    private static final int BATCH_SIZE = 10;
+    private static final int BATCH_SIZE = 50;
 
     @Transactional
     public void processBook(UUID bookId) {

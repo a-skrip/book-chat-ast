@@ -3,13 +3,14 @@ package ru.ast.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.document.Document;
+import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import ru.ast.service.BookService;
 
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,8 @@ public class ChatController {
 
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
-    private final ChatModel chatModel;
+    private final OpenAiChatModel chatModel;
+    private final BookService bookService;
 
 
     @GetMapping("/chat")
@@ -32,6 +34,8 @@ public class ChatController {
         String model = chatModel.getDefaultOptions().getModel();
 
         log.info("Используемая Model: {}", model);
+
+
         log.info("Запрос: message= {}, bookId= {}", message, bookId);
 
         // 1. Ищем релевантные чанки
@@ -54,21 +58,30 @@ public class ChatController {
 
         log.info(context);
 
-        // 3. Промпт с контекстом
-        String prompt = """
+
+        String system = """
                 Ты — интеллектуальный помощник по книге.
-                Отвечай ТОЛЬКО на основе информации из контекста и ТОЛЬКО на русском языке.
-                Если в контексте нет ответа, скажи: "В книге нет информации об этом".
-                Не придумывай и не добавляй информацию из своих знаний.
-                КОНТЕКСТ ИЗ КНИГИ:
+                Не нарушай правила!
+                ПРАВИЛА:
+                1. Отвечай ТОЛЬКО НА ОСНОВЕ КОНТЕКСТА.
+                2. Дай ответ не больше 3-5 предложений.
+                3. Не придумывай в ответе ничего и не добавляй от себя.
+                4. Если в контексте нет информации — скажи: "В книге нет информации".
+                """;
+
+        String user = String.format("""
+                КОНТЕКСТ:
                 %s
                 
-                ВОПРОС: %s
+                ВОПРОС:
+                %s
                 
-                ОТВЕТ:""".formatted(context, message);
+                ОТВЕТ:
+                """, context, message);
 
         String answer = chatClient.prompt()
-                .user(prompt)
+                .system(system)
+                .user(user)
                 .call()
                 .content();
 
@@ -87,15 +100,13 @@ public class ChatController {
      * Поиск релевантных чанков по книге
      */
     private List<Document> findRelevantChunks(String question, UUID bookId) {
-//        FilterExpressionBuilder builder = new FilterExpressionBuilder();
-//        var filter = builder.eq("bookId", bookId.toString());
         long start = System.currentTimeMillis();
         String exp = "bookId == '" + bookId + "'";
 
         SearchRequest searchRequest = SearchRequest.builder()
                 .query(question)
                 .filterExpression(exp)
-                .topK(5)
+                .topK(3)
                 .build();
 
         List<Document> documents = vectorStore.similaritySearch(searchRequest);
