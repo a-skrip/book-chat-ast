@@ -38,28 +38,28 @@ public class BookService {
     public BookResponseDto saveBook(BookRequestDto bookRequestDto) {
         Book entity = new Book();
         String fullText;
-        String uploadedPath;
-        String titleFromPath = getTitleFromPath(bookRequestDto.path());
-
-        boolean existsBookByTitle = bookRepository.existsBookByTitle(titleFromPath);
+        String uploadedPath = bookRequestDto.path();
+        String title = bookRequestDto.title();
+        String pathToLocalFile;
+        boolean existsBookByTitle = bookRepository.existsBookByTitle(title);
 
         if (!existsBookByTitle) {
-            uploadedPath = fileUploadService.upload(bookRequestDto.path());
+            pathToLocalFile = fileUploadService.upload(uploadedPath);
         } else {
-            throw new BookIsExistException("Книга с названием: \"" + titleFromPath + "\" уже была загружена ранее");
+            throw new BookIsExistException("Книга с названием: \"" + title + "\" уже была загружена ранее");
         }
 
         try {
-            fullText = TextExtractor.extractTextFromFile(uploadedPath);
+            fullText = TextExtractor.extractTextFromFile(pathToLocalFile);
         } catch (TikaException | IOException e) {
             throw new RuntimeException(e.getMessage());
         }
-        entity.setTitle(titleFromPath);
-        entity.setUploadPath(bookRequestDto.path());
+        entity.setTitle(title);
+        entity.setUploadPath(uploadedPath);
         entity.setFullText(fullText);
 
         Book savedBook = bookRepository.save(entity);
-        log.info("Сохранена книга: \"{}\" c id: {}", titleFromPath, savedBook.getId());
+        log.info("Сохранена книга: \"{}\" c id: {}", title, savedBook.getId());
 
         BookProcessingService processingService =
                 new BookProcessingService(textChunkingService, vectorStore, bookRepository);
@@ -68,10 +68,5 @@ public class BookService {
         processingService.processBook(savedBook.getId());
 
         return BookMapper.toDto(savedBook);
-    }
-
-    private String getTitleFromPath(String path) {
-        Path pathToFile = Paths.get(path);
-        return pathToFile.getFileName().toString();
     }
 }
