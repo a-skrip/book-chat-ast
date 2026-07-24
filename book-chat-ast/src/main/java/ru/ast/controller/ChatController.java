@@ -25,7 +25,6 @@ public class ChatController {
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
     private final OpenAiChatModel chatModel;
-    private final BookService bookService;
 
 
     @GetMapping("/chat")
@@ -34,8 +33,6 @@ public class ChatController {
         String model = chatModel.getDefaultOptions().getModel();
 
         log.info("Используемая Model: {}", model);
-
-
         log.info("Запрос: message= {}, bookId= {}", message, bookId);
 
         // 1. Ищем релевантные чанки
@@ -96,9 +93,6 @@ public class ChatController {
         );
     }
 
-    /**
-     * Поиск релевантных чанков по книге
-     */
     private List<Document> findRelevantChunks(String question, UUID bookId) {
         long start = System.currentTimeMillis();
         String exp = "bookId == '" + bookId + "'";
