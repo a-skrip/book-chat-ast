@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -25,22 +26,26 @@ public class CharacterChatController {
     private final OpenAiChatModel chatModel;
 
     @GetMapping("/characters")
-    public String test(@RequestParam String message,
-                       @RequestParam UUID bookId,
-                       @RequestParam String character) {
+    public Map<String, String> test(@RequestParam String message,
+                                    @RequestParam UUID bookId,
+                                    @RequestParam String character) {
         long startTime = System.currentTimeMillis();
 
-        List<Document> chunks = findRelevantChunks(message, bookId);
+        List<Document> chunks = findRelevantChunks(message, bookId, character);
         log.info("Найдено {} релевантных чанков", chunks.size());
 
         if (chunks.isEmpty()) {
-            return "Информации не нашлось";
+            return Map.of(
+                    "Герой", character,
+                    "Вопрос", message,
+                    "Ответ", "Ответ не удалось сгенерировать"
+            );
         }
         // 2. Формируем контекст
 
         String context = chunks.stream()
                 .map(Document::getText)
-                .collect(Collectors.joining("\n\n---\n\n"));
+                .collect(Collectors.joining("\n\n------\n\n"));
 
         // 3. System-промпт
         String system = String.format("""
@@ -49,11 +54,8 @@ public class CharacterChatController {
                 ЖЁСТКОЕ ПРАВИЛО:
                 1. Отвечай ТОЛЬКО от лица %s.
                 2. Используй ТОЛЬКО слова %s из контекста.
-                3. НЕ ВЫДУМЫВАЙ диалогов и событий.
-                4. НЕ используй фразы других персонажей.
-                5. Если в контексте нет информации — скажи: "Я не помню этого".
-                6. Отвечай кратко, как персонаж.
-                7. НЕ говори о себе в третьем лице.
+                3. НЕ ВЫДУМЫВАЙ.
+                4. Отвечай коротко, не более 4 предложений
                 """, character, character, character);
 
         // 4. User-промпт с контекстом
@@ -61,9 +63,10 @@ public class CharacterChatController {
                 КОНТЕКСТ
                 %s
                 
-                ВОПРОС: %s
+                ВОПРОС:
+                %s
                 
-                ОТВЕТЬ КОРОТКО, КАК %s (только из контекста):
+                ОТВЕТ от лица персонажа %s:
                 """, context, message, character);
 
         // 5. Отправляем запрос
@@ -75,15 +78,28 @@ public class CharacterChatController {
 
         long endTime = System.currentTimeMillis();
         log.info("Модель ответила за: {} ms", endTime - startTime);
+//        log.info("Модель: {}", chatModel.getDefaultOptions().getModel());
+//        log.info("Температура: {}", chatModel.getDefaultOptions().getTemperature());
+//        log.info("TopK: {}", chatModel.getDefaultOptions());
+//        log.info("max Token: {}", chatModel.getDefaultOptions().getMaxTokens());
 
-        return response;
+        assert response != null;
+        return Map.of(
+                "Герой", character,
+                "Вопрос", message,
+                "Ответ", response
+
+
+        );
     }
 
-    private List<Document> findRelevantChunks(String question, UUID bookId) {
+    private List<Document> findRelevantChunks(String question, UUID bookId, String character) {
         String exp = "bookId == '" + bookId + "'";
 
+        String searchQuery = question + " " + character;
+
         SearchRequest searchRequest = SearchRequest.builder()
-                .query(question)
+                .query(searchQuery)
                 .filterExpression(exp)
                 .topK(3)
                 .build();

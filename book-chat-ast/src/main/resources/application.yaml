@@ -6,7 +6,23 @@ spring:
     name: book-chat
 
   ai:
-#    ollama:
+    openai:
+      base-url: https://api.mistral.ai
+      api-key: ${MISTRAL_API_KEY}
+      chat:
+        options:
+          model: mistral-large-latest
+          temperature: 0.5
+          max-tokens: 256
+      # Эмбеддинги — локальный llama.cpp
+
+      embedding:
+        base-url: http://localhost:8082
+        api-key: dummy-key
+        options:
+          dimensions: 1024
+          model: Qwen3-Embedding-0.6B-f16
+    #    ollama:
 #      base-url: http://localhost:11434
 #      chat:
 #        options:
@@ -18,20 +34,22 @@ spring:
 #        options:
 #          model: nomic-embed-text:latest
 
-    openai:
-      base-url: http://localhost:8081
-      api-key: dummy-key
-      chat:
-        options:
-          model: mistral-7b-instruct-v0.2.Q4_K_M
-          temperature: 0.0
-          max-tokens: 256
-      embedding:
-        base-url: http://localhost:8082
-        api-key: dummy-key
-        options:
-          dimensions: 1024
-          model: Qwen3-Embedding-0.6B-f16
+#    openai:
+#      # Чат — Mistral AI (облако)
+#      base-url: https://api.mistral.ai/v1
+#      api-key: ${MISTRAL_API_KEY}
+#      chat:
+#        options:
+#          model: mistral-large-latest
+#          temperature: 0.5
+#          max-tokens: 256
+#      # Эмбеддинги — локальный llama.cpp
+#      embedding:
+#        base-url: http://localhost:8082
+#        api-key: dummy-key
+#        options:
+#          dimensions: 1024
+#          model: Qwen3-Embedding-0.6B-f16
 
 #    vectorstore:
 #      pgvector:

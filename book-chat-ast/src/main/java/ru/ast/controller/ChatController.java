@@ -10,7 +10,6 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.ast.service.BookService;
 
 import java.util.List;
 import java.util.Map;
