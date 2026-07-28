@@ -75,7 +75,7 @@ public class BookProcessingService {
                 bookId, totalTime, totalChunks);
 
         book.setStatus("PROCESSED");
-        bookRepository.save(book)
+        bookRepository.save(book);
     }
 
 
