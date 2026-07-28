@@ -20,13 +20,13 @@ public class BookController {
 
     @PostMapping
     public ResponseEntity<BookResponseDto> addBook(@RequestBody BookRequestDto bookDto) {
-        bookService.saveBook(bookDto);
-        return ResponseEntity.ok().build();
+        BookResponseDto response = bookService.saveBook(bookDto);
+        return ResponseEntity.ofNullable(response);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<BookResponseDto> getBookById(@RequestParam UUID bookId) {
-        BookResponseDto responseDto = bookService.getBook(bookId);
-        return ResponseEntity.ofNullable(responseDto);
+        BookResponseDto response = bookService.getBook(bookId);
+        return ResponseEntity.ofNullable(response);
     }
 }

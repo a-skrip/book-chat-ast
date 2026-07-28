@@ -59,13 +59,14 @@ public class BookService {
         entity.setFullText(fullText);
 
         Book savedBook = bookRepository.save(entity);
-        log.info("Сохранена книга: \"{}\" c id: {}", title, savedBook.getId());
+        UUID bookId = savedBook.getId();
+        log.info("Сохранена книга: \"{}\" c id: {}", title, bookId);
 
         BookProcessingService processingService =
                 new BookProcessingService(textChunkingService, vectorStore, bookRepository);
 
-        log.info("Запуск ВЕКТОРИЗАЦИИ для книги с ID: {}", savedBook.getId());
-        processingService.processBook(savedBook.getId());
+        log.info("Запуск ВЕКТОРИЗАЦИИ для книги с ID: {}", bookId);
+        processingService.processBook(bookId);
 
         return BookMapper.toDto(savedBook);
     }

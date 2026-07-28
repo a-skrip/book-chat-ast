@@ -7,6 +7,7 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.ast.entity.Book;
+import ru.ast.exceptions.BookNotFoundException;
 import ru.ast.exceptions.FullTextNotExistException;
 import ru.ast.repository.BookRepository;
 
@@ -29,8 +30,13 @@ public class BookProcessingService {
         long startTime = System.currentTimeMillis();
         log.info("Начинаем обработку книги с ID: {}", bookId);
 
-        // 1. Получаем текст
-        String fullText = getFullTextFromDatabase(bookId);
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(
+                        () -> new BookNotFoundException("Книга не найдена")
+                );
+
+
+        String fullText = book.getFullText();
         if (fullText == null || fullText.isEmpty()) {
             log.error("Текст для книги {} не найден", bookId);
             return;
@@ -67,15 +73,16 @@ public class BookProcessingService {
         long totalTime = System.currentTimeMillis() - startTime;
         log.info("✅ Книга {} обработана за {} мс ({} чанков)",
                 bookId, totalTime, totalChunks);
+
+        book.setStatus("PROCESSED");
+        bookRepository.save(book)
     }
 
 
 
-    private String getFullTextFromDatabase(UUID bookId) {
-        return bookRepository.findById(bookId)
-                .map(Book::getFullText)
-                .orElseThrow(() -> new FullTextNotExistException("Текст книги не найден или отсутствует"));
-    }
+//    private String getFullTextFromDatabase(UUID bookId) {
+//        return
+//    }
 
     private void deleteOldChunks(UUID bookId) {
         // Ваша логика удаления старых чанков
