@@ -78,10 +78,6 @@ public class CharacterChatController {
 
         long endTime = System.currentTimeMillis();
         log.info("Модель ответила за: {} ms", endTime - startTime);
-//        log.info("Модель: {}", chatModel.getDefaultOptions().getModel());
-//        log.info("Температура: {}", chatModel.getDefaultOptions().getTemperature());
-//        log.info("TopK: {}", chatModel.getDefaultOptions());
-//        log.info("max Token: {}", chatModel.getDefaultOptions().getMaxTokens());
 
         assert response != null;
         return Map.of(
