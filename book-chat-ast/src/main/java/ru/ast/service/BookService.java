@@ -15,8 +15,6 @@ import ru.ast.repository.BookRepository;
 import ru.ast.util.TextExtractor;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.UUID;
 
 @Slf4j

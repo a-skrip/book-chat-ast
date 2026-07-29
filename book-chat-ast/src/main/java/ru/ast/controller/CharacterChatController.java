@@ -3,8 +3,8 @@ package ru.ast.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.document.Document;
-import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +23,6 @@ public class CharacterChatController {
 
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
-    private final OpenAiChatModel chatModel;
 
     @GetMapping("/characters")
     public Map<String, String> test(@RequestParam String message,

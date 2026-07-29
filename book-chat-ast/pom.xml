@@ -35,7 +35,7 @@
 
         <dependency>
             <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-starter-model-openai</artifactId>
+            <artifactId>spring-ai-starter-model-mistral-ai</artifactId>
         </dependency>
         <!-- Вместо langchain4j-core добавьте langchain4j -->
         <dependency>
@@ -50,15 +50,6 @@
             <artifactId>langchain4j-ollama</artifactId>
             <version>0.34.0</version>
         </dependency>
-
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.ai</groupId>-->
-<!--            <artifactId>spring-ai-starter-model-ollama</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.ai</groupId>-->
-<!--            <artifactId>spring-ai-starter-model-mistral-ai</artifactId>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-client-chat</artifactId>
