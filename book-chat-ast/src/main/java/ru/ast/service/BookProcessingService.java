@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.VectorStore;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.ast.dto.CharacterDto;
 import ru.ast.entity.Book;
 import ru.ast.exceptions.BookNotFoundException;
 import ru.ast.repository.BookRepository;
@@ -23,6 +23,7 @@ public class BookProcessingService {
     private final LangChainChunkingService chunkingService;
     private final VectorStore vectorStore;
     private final BookRepository bookRepository;
+    private final CharacterExtractionService characterExtractor;
 
     private static final int BATCH_SIZE = 20;
     private static final int SLEEP_TIME = 30_000;
@@ -36,7 +37,6 @@ public class BookProcessingService {
                 .orElseThrow(
                         () -> new BookNotFoundException("Книга не найдена")
                 );
-
 
         String fullText = book.getFullText();
         if (fullText == null || fullText.isEmpty()) {
@@ -54,7 +54,7 @@ public class BookProcessingService {
             return;
         }
 
-//         3. Сохраняем батчами с прогрессом
+        // 3. Сохраняем батчами с прогрессом
         log.info("Начинаем сохранение в VectorStore батчами по {} чанков", BATCH_SIZE);
 
         int totalChunks = allChunks.size();
@@ -88,7 +88,11 @@ public class BookProcessingService {
         bookRepository.save(book);
 
         String status = bookRepository.findById(bookId).orElseThrow().getStatus();
-        log.info("Статус для bookId {} теперь: {}", bookId, status);
+        log.info("Статус для bookId {} - {}", bookId, status);
+
+        List<CharacterDto> characters = characterExtractor.findCharacters(bookId);
+        log.info("В произведении найдено: {} персонажей. Characters: {}"
+                , characters.size(), characters.toString());
     }
 
     private void deleteOldChunks(UUID bookId) {

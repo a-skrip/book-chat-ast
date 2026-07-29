@@ -3,7 +3,6 @@ package ru.ast.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
-import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
 import ru.ast.dto.BookRequestDto;
 import ru.ast.dto.BookResponseDto;
@@ -24,8 +23,7 @@ public class BookService {
 
     private final BookRepository bookRepository;
     private final FileUploadService fileUploadService;
-    private final LangChainChunkingService textChunkingService;
-    private final VectorStore vectorStore;
+    private final BookProcessingService bookProcessingService;
 
     public BookResponseDto getBook(UUID bookId) {
         return BookMapper.toDto(bookRepository.findById(bookId)
@@ -60,11 +58,8 @@ public class BookService {
         UUID bookId = savedBook.getId();
         log.info("Сохранена книга: \"{}\" c id: {}", title, bookId);
 
-        BookProcessingService processingService =
-                new BookProcessingService(textChunkingService, vectorStore, bookRepository);
-
         log.info("Запуск ВЕКТОРИЗАЦИИ для книги с ID: {}", bookId);
-        processingService.processBook(bookId);
+        bookProcessingService.processBook(bookId);
 
         return BookMapper.toDto(savedBook);
     }

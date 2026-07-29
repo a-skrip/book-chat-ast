@@ -55,7 +55,7 @@ public class CharacterExtractionService {
             character.setBook(book);
             characters.add(character);
         }
-        log.info("Сохранение персонажей в базу для bookId: {}", bookId);
+        log.info("Сохранение персонажей в БД для bookId: {}", bookId);
         List<Character> savedCharacters = characterRepository.saveAll(characters);
 
         return CharacterMapper.toDtoList(savedCharacters);
