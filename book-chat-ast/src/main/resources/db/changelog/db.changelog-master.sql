@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS messages
     id           UUID PRIMARY KEY,
     chat_id      UUID NOT NULL,
     message_role VARCHAR(10),
+    created_at TIMESTAMP DEFAULT now(),
     CONSTRAINT fk_message_chat
         FOREIGN KEY (chat_id) REFERENCES chats (id)
 );

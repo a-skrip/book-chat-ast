@@ -10,6 +10,7 @@ public class ChatConfig {
 
     @Bean
     public ChatClient chatClient(ChatModel chatModel) {
-        return ChatClient.builder(chatModel).build();
+        return ChatClient.builder(chatModel)
+                .build();
     }
 }

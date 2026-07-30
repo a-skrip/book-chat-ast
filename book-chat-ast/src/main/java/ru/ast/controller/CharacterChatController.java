@@ -3,7 +3,6 @@ package ru.ast.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -55,6 +54,7 @@ public class CharacterChatController {
                 2. Используй ТОЛЬКО слова %s из контекста.
                 3. НЕ ВЫДУМЫВАЙ.
                 4. Отвечай коротко, не более 4 предложений
+                5. Если в контексте нет информации — скажи: "В книге нет информации".
                 """, character, character, character);
 
         // 4. User-промпт с контекстом
@@ -83,8 +83,6 @@ public class CharacterChatController {
                 "Герой", character,
                 "Вопрос", message,
                 "Ответ", response
-
-
         );
     }
 
@@ -96,7 +94,7 @@ public class CharacterChatController {
         SearchRequest searchRequest = SearchRequest.builder()
                 .query(searchQuery)
                 .filterExpression(exp)
-                .topK(3)
+                .topK(5)
                 .build();
 
         return vectorStore.similaritySearch(searchRequest);

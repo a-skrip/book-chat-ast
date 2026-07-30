@@ -12,9 +12,8 @@ spring:
       chat:
         options:
           model: mistral-large-latest
-          temperature: 0.5
+          temperature: 0.2
           max-tokens: 256
-
       embedding:
         base-url: https://api.mistral.ai
         api-key: ${MISTRAL_API_KEY}
