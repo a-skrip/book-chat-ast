@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS characters
 --changeset AlexeySkripnichenko:3
 CREATE TABLE IF NOT EXISTS readers
 (
-    id UUID PRIMARY KEY,
+    id   UUID PRIMARY KEY,
     name VARCHAR(50)
 );
 
@@ -46,8 +46,11 @@ CREATE TABLE IF NOT EXISTS reader_sessions
 --changeset AlexeySkripnichenko:5
 CREATE TABLE IF NOT EXISTS chats
 (
-    id         UUID PRIMARY KEY,
-    session_id UUID NOT NULL,
+    id           UUID PRIMARY KEY,
+    session_id   UUID NOT NULL,
+    character_id UUID NOT NULL,
+    CONSTRAINT fk_chat_character
+        FOREIGN KEY (character_id) REFERENCES characters (id),
     CONSTRAINT fk_chat_reader_session
         FOREIGN KEY (session_id) REFERENCES reader_sessions (id)
 );
@@ -56,9 +59,10 @@ CREATE TABLE IF NOT EXISTS chats
 CREATE TABLE IF NOT EXISTS messages
 (
     id           UUID PRIMARY KEY,
+    text VARCHAR(400),
     chat_id      UUID NOT NULL,
     message_role VARCHAR(10),
-    created_at TIMESTAMP DEFAULT now(),
+    created_at   TIMESTAMP DEFAULT now(),
     CONSTRAINT fk_message_chat
         FOREIGN KEY (chat_id) REFERENCES chats (id)
 );

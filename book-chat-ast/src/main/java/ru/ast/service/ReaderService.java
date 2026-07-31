@@ -18,11 +18,12 @@ public class ReaderService {
 
     public ReaderDto saveReader(String name) {
         if (name == null || name.isEmpty()) {
-            throw new NameNoSendException("Имя не задано");
+            throw new NameNoSendException();
         }
         Reader entity = new Reader();
         entity.setName(name);
         Reader saved = readerRepository.save(entity);
+        log.info("Создан name = {} c id = {}", name, saved.getId());
         return ReaderMapper.toDto(saved);
     }
 }

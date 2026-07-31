@@ -1,7 +1,9 @@
 package ru.ast.exceptions;
 
 public class FullTextNotExistException extends RuntimeException {
-    public FullTextNotExistException(String message) {
-        super(message);
+    private static final String MESSAGE = "Текст для книги отсутствует";
+
+    public FullTextNotExistException() {
+        super(MESSAGE);
     }
 }

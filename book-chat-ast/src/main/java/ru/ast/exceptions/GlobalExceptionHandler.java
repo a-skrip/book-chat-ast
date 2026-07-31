@@ -27,4 +27,33 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleNameNoSendException(NameNoSendException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
+    @ExceptionHandler(FullTextNotExistException.class)
+    public ResponseEntity<String> handleFullTextNotExistException(FullTextNotExistException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(ReaderNotFoundException.class)
+    public ResponseEntity<String> handleReaderNotFoundException(ReaderNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(CharactersForBookNotExistException.class)
+    public ResponseEntity<String> handelCharacterNotFoundException(CharactersForBookNotExistException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(CharacterNotFoundException.class)
+    public ResponseEntity<String> handleCharacterNotFoundException(CharacterNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(SessionNotFoundException.class)
+    public ResponseEntity<String> handleSessionForReaderNotFoundException(SessionNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(ChatNotFoundException.class)
+    public ResponseEntity<String> handleChatNotFoundException(ChatNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
 }

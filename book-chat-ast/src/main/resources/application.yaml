@@ -19,7 +19,7 @@ spring:
         api-key: ${MISTRAL_API_KEY}
 
         options:
-          model: mistral-embed
+          model: mistral-embed-2312
     vectorstore:
       pgvector:
         initialize-schema: true
@@ -36,7 +36,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true

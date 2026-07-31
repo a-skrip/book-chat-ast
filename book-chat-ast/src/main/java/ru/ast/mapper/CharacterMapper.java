@@ -12,4 +12,12 @@ public class CharacterMapper {
                 .map(elem -> new CharacterDto(elem.getId(), elem.getName()))
                 .toList();
     }
+
+    public static CharacterDto toDto(Character character) {
+        CharacterDto dto = new CharacterDto(
+                character.getId(),
+                character.getName()
+        );
+        return dto;
+    }
 }

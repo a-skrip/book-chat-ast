@@ -13,10 +13,12 @@ import org.springframework.stereotype.Service;
 import ru.ast.dto.CharacterDto;
 import ru.ast.entity.Book;
 import ru.ast.entity.Character;
+import ru.ast.entity.Chat;
 import ru.ast.exceptions.BookNotFoundException;
 import ru.ast.mapper.CharacterMapper;
 import ru.ast.repository.BookRepository;
 import ru.ast.repository.CharacterRepository;
+import ru.ast.repository.ChatRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,24 +28,31 @@ import java.util.stream.Collectors;
 @Slf4j
 @AllArgsConstructor
 @Service
-public class CharacterExtractionService {
+public class CharacterService {
 
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
     private final CharacterRepository characterRepository;
     private final ObjectMapper objectMapper;
     private final BookRepository bookRepository;
+    private final ChatRepository chatRepository;
 
 
     public List<CharacterDto> findCharacters(UUID bookId) {
+        boolean existCharacters = characterRepository.existsCharactersByBookId(bookId);
+        if (existCharacters) {
+            log.info("Герои уже сохранены, возврат существующих");
+            return CharacterMapper.toDtoList(characterRepository.findAllByBookId(bookId));
+        }
         String extractCharacter = extractCharacter(bookId);
         return saveCharacterFromJson(bookId, extractCharacter);
     }
 
 
+
     private List<CharacterDto> saveCharacterFromJson(UUID bookId, String jsonCharacters) {
         Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new BookNotFoundException("Книга не найдена"));
+                .orElseThrow(BookNotFoundException::new);
 
         List<String> names = parseJsonCharacters(jsonCharacters);
         List<Character> characters = new ArrayList<>();

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import ru.ast.enums.MessageRole;
 
 import java.time.LocalDateTime;
@@ -22,8 +23,12 @@ public class Message {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(name ="text")
+    private String text;
+
+    @CreationTimestamp
     @Column(name = "created_at")
-    LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "message_role", nullable = false)
     @Enumerated(EnumType.STRING)

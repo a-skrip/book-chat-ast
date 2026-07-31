@@ -24,6 +24,10 @@ public class Chat {
     @JoinColumn(name = "session_id",nullable = false)
     private ReaderSession session;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "character_id", nullable = false)
+    private Character character;
+
     @OneToMany(mappedBy = "chat", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Message> messages;
 }
