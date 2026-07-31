@@ -28,7 +28,7 @@ public class BookService {
     public BookResponseDto getBook(UUID bookId) {
         return BookMapper.toDto(bookRepository.findById(bookId)
                 .orElseThrow(
-                        () -> new BookNotFoundException("Книга с id: " + bookId + " не найдена")));
+                        () -> new BookNotFoundException(bookId)));
     }
 
     public BookResponseDto saveBook(BookRequestDto bookRequestDto) {
@@ -42,7 +42,7 @@ public class BookService {
         if (!existsBookByTitle) {
             pathToLocalFile = fileUploadService.upload(uploadedPath);
         } else {
-            throw new BookIsExistException("Книга с названием: \"" + title + "\" уже была загружена ранее");
+            throw new BookIsExistException(bookRequestDto.title());
         }
 
         try {
