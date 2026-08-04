@@ -13,6 +13,7 @@ import ru.ast.exceptions.BookNotFoundException;
 import ru.ast.exceptions.CharacterNotFoundException;
 import ru.ast.exceptions.CharactersForBookNotExistException;
 import ru.ast.exceptions.ReaderNotFoundException;
+import ru.ast.mapper.MessagesMapper;
 import ru.ast.repository.*;
 
 import java.time.LocalDateTime;
@@ -25,7 +26,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ChatService {
 
-    private final ModelService modelService;
+    private final ModelChatService modelService;
     private final BookRepository bookRepository;
     private final CharacterRepository characterRepository;
     private final ChatRepository chatRepository;
@@ -43,7 +44,7 @@ public class ChatService {
                 .orElseThrow(() -> new ReaderNotFoundException(request.readerId()));
 
         if (!characterRepository.existsCharactersByBookId(request.bookId())) {
-            log.warn("Нет героев для книги: {}",  request.bookId());
+            log.warn("Нет героев для книги: {}", request.bookId());
             throw new CharactersForBookNotExistException(request.bookId());
         }
         Character character = characterRepository.findById(request.characterId())
@@ -57,13 +58,22 @@ public class ChatService {
         ReaderSession session = sessionRepository.findReaderSessionByReaderId(reader.getId())
                 .orElseGet(() -> createReaderSession(reader, book));
 
+        //TODO при подмене book_id продолжается переписка в том же чате, а должна открыться новая сессия
         Chat chat = chatRepository.findChatBySessionIdAndCharacterId(session.getId(), character.getId())
                 .orElseGet(() -> createChat(character, session));
 
         Message question = createMessage(chat, MessageRole.USER, request.message());
         messageRepository.save(question);
 
-        String answerFromModel = modelService.getAnswerFromModel(request.message(), book.getId(), character.getName());
+        List<MessageDto> chatHistoryForModel = getChatHistoryForModel(chat.getId());
+
+        String answerFromModel = modelService.getAnswerFromModel(
+                request.message(),
+                book.getId(),
+                character.getName(),
+                chatHistoryForModel
+        );
+
         Message answer = createMessage(chat, MessageRole.SYSTEM, answerFromModel);
         messageRepository.save(answer);
 
@@ -71,21 +81,8 @@ public class ChatService {
         response.setChatId(chat.getId().toString());
         response.setCharacterId(character.getId().toString());
 
-        List<Message> chatHistory = getChatHistory(chat.getId());
-        List<MessageDto> collect = chatHistory.stream()
-                .map(el -> {
-                    String role = el.getMessageRole().toString();
-                    String text = el.getText();
-                    LocalDateTime createdAt = el.getCreatedAt();
-                    MessageDto dto = new MessageDto();
-                    dto.setRole(role);
-                    dto.setMessage(text);
-                    dto.setTimestamp(createdAt);
-                    return dto;
-                })
-                .toList();
-
-        response.setMessages(collect);
+        List<MessageDto> chatHistory = getChatHistory(chat.getId());
+        response.setMessages(chatHistory);
 
         return response;
 
@@ -119,8 +116,14 @@ public class ChatService {
         return message;
     }
 
-    private List<Message> getChatHistory(UUID chatId) {
-        return messageRepository.findAllByChatId(chatId);
+    private List<MessageDto> getChatHistory(UUID chatId) {
+        return MessagesMapper.toDtoList(messageRepository.findAllByChatIdOrderByCreatedAtAsc(chatId));
     }
 
+    private List<MessageDto> getChatHistoryForModel(UUID chatId) {
+        List<Message> history = messageRepository
+                .findTop7ByChatIdOrderByCreatedAtDesc(chatId);
+        List<Message> reversed = history.reversed();
+        return MessagesMapper.toDtoList(reversed);
+    }
 }

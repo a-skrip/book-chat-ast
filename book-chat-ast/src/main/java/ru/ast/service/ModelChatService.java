@@ -7,6 +7,8 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
+import ru.ast.dto.MessageDto;
+import ru.ast.enums.MessageRole;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,14 +17,17 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @AllArgsConstructor
-public class ModelService {
+public class ModelChatService {
 
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
 
-    public String getAnswerFromModel(String question, UUID bookId, String character) {
+    public String getAnswerFromModel(String question, UUID bookId, String character, List<MessageDto> history) {
         long start = System.currentTimeMillis();
         log.info("Задан вопрос: {} по книге: {}, персонаж: {}", question, bookId, character);
+
+        String historyText;
+
         List<Document> chunks = findRelevantChunks(question, bookId, character);
 
         if (chunks.isEmpty()) {
@@ -35,8 +40,21 @@ public class ModelService {
 
         log.info("Контекст: {}", context);
 
+        if (history.isEmpty()) {
+            historyText = "Диалога ещё не было";
+        } else {
+            historyText = history.stream()
+                    .map(elem -> {
+                        String role = elem.getRole() == MessageRole.USER ? "Читатель" : character;
+                        String message = elem.getMessage();
+                        return role + ": " + message;
+                    })
+                    .collect(Collectors.joining("\n"));
+        }
+
         String system = String.format("""
                 Ты — герой книги "Герой нашего времени" — %s.
+                Веди диалог с читателем, история диалога тебе будет передана
                 Не нарушай правила!
                 
                 ЖЁСТКИЕ ПРАВИЛА:
@@ -53,12 +71,16 @@ public class ModelService {
                 """, character, character, context);
 
         String user = String.format("""
+                ИСТОРИЯ ДИАЛОГА:
+                %s
+                
                 ВОПРОС:
                 %s
                 
                 ОТВЕТ от лица персонажа %s:
-                """, question, character);
+                """, historyText, question, character);
 
+        log.info(historyText);
 
         String answer = chatClient.prompt()
                 .system(system)

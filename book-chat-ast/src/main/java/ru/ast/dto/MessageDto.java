@@ -1,12 +1,13 @@
 package ru.ast.dto;
 
 import lombok.Data;
+import ru.ast.enums.MessageRole;
 
 import java.time.LocalDateTime;
 
 @Data
 public class MessageDto {
-    private String role;
+    private MessageRole role;
     private String message;
-    private LocalDateTime timestamp;
+    private LocalDateTime createdAt;
 }
