@@ -6,13 +6,11 @@ import org.springframework.stereotype.Service;
 import ru.ast.dto.ChatRequestDto;
 import ru.ast.dto.ChatWithMessageDto;
 import ru.ast.dto.MessageDto;
+import ru.ast.dto.ReaderSessionDto;
 import ru.ast.entity.*;
 import ru.ast.entity.Character;
 import ru.ast.enums.MessageRole;
-import ru.ast.exceptions.BookNotFoundException;
-import ru.ast.exceptions.CharacterNotFoundException;
-import ru.ast.exceptions.CharactersForBookNotExistException;
-import ru.ast.exceptions.ReaderNotFoundException;
+import ru.ast.exceptions.*;
 import ru.ast.mapper.MessagesMapper;
 import ru.ast.repository.*;
 
@@ -85,8 +83,29 @@ public class ChatService {
         response.setMessages(chatHistory);
 
         return response;
-
     }
+
+    public ReaderSessionDto getSession(UUID sessionId) {
+        ReaderSession session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new SessionNotFoundException(sessionId));
+
+        ReaderSessionDto response = new ReaderSessionDto();
+        response.setSessionId(session.getId());
+
+        List<Chat> chats = session.getChats();
+        log.info("Формирование списка чатов для session: {}", sessionId);
+
+        List<MessageDto> messageDtoList = new ArrayList<>();
+        for (Chat chat : chats) {
+            Message message = messageRepository.findLastMessageFromReader(chat.getId());
+            MessageDto dto = MessagesMapper.toDto(message);
+
+            messageDtoList.add(dto);
+        }
+        response.setMessages(messageDtoList);
+        return response;
+    }
+
 
     private ReaderSession createReaderSession(Reader reader, Book book) {
         ReaderSession readerSession = new ReaderSession();

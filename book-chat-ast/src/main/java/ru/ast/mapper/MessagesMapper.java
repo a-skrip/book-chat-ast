@@ -3,6 +3,7 @@ package ru.ast.mapper;
 import ru.ast.dto.MessageDto;
 import ru.ast.entity.Message;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class MessagesMapper {
@@ -17,7 +18,8 @@ public class MessagesMapper {
         MessageDto dto = new MessageDto();
         dto.setRole(message.getMessageRole());
         dto.setMessage(message.getText());
-        dto.setCreatedAt(message.getCreatedAt());
+        dto.setCharacter(CharacterMapper.toDto(message.getChat().getCharacter()));
+        dto.setCreatedAt(LocalDate.from(message.getCreatedAt()));
         return dto;
     }
 }
