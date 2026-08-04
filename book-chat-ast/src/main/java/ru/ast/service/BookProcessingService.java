@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.ast.dto.CharacterDto;
 import ru.ast.entity.Book;
 import ru.ast.exceptions.BookNotFoundException;
@@ -23,20 +22,18 @@ public class BookProcessingService {
     private final LangChainChunkingService chunkingService;
     private final VectorStore vectorStore;
     private final BookRepository bookRepository;
-    private final CharacterExtractionService characterExtractor;
+    private final CharacterService characterExtractor;
 
-    private static final int BATCH_SIZE = 20;
+    private static final int BATCH_SIZE = 10;
     private static final int SLEEP_TIME = 30_000;
 
-    @Transactional
+
     public void processBook(UUID bookId) {
         long startTime = System.currentTimeMillis();
         log.info("Начинаем обработку книги с ID: {}", bookId);
 
         Book book = bookRepository.findById(bookId)
-                .orElseThrow(
-                        () -> new BookNotFoundException("Книга не найдена")
-                );
+                .orElseThrow(() -> new BookNotFoundException(bookId));
 
         String fullText = book.getFullText();
         if (fullText == null || fullText.isEmpty()) {
@@ -45,7 +42,7 @@ public class BookProcessingService {
         }
 
         // 2. Разбиваем на чанки
-        List<Document> allChunks = chunkingService.splitText(fullText, bookId);
+        List<Document> allChunks = chunkingService.splitText(fullText, book.getId());
 
         log.info("Создано {} чанков", allChunks.size());
 
@@ -65,7 +62,14 @@ public class BookProcessingService {
             int end = Math.min(i + BATCH_SIZE, totalChunks);
             List<Document> batch = allChunks.subList(i, end);
 
-            vectorStore.add(batch);
+            try {
+                vectorStore.add(batch);
+                log.info("Батч: {} сохранен", i);
+
+            } catch (Exception e) {
+                log.warn("Не удалось сохранить батч в БД  " + e.getMessage());
+            }
+
             long batchTime = System.currentTimeMillis() - startBatch;
 
             processed += batch.size();
@@ -81,28 +85,18 @@ public class BookProcessingService {
 
         long totalTime = System.currentTimeMillis() - startTime;
         log.info("✅ Книга {} обработана за {} мс ({} чанков)",
-                bookId, totalTime, totalChunks);
+                book.getId(), totalTime, totalChunks);
 
         book.setStatus("PROCESSED");
         log.info("Сохранено, статус изменен на PROCESSED");
-        bookRepository.save(book);
+        Book savedBook = bookRepository.save(book);
 
-        String status = bookRepository.findById(bookId).orElseThrow().getStatus();
-        log.info("Статус для bookId {} - {}", bookId, status);
+        log.info("Статус для bookId {} - {}", bookId, savedBook.getStatus());
 
-        List<CharacterDto> characters = characterExtractor.findCharacters(bookId);
+        List<CharacterDto> characters = characterExtractor.findCharacters(savedBook.getId());
         log.info("В произведении найдено: {} персонажей. Characters: {}"
                 , characters.size(), characters.toString());
     }
 
-    private void deleteOldChunks(UUID bookId) {
-        // Ваша логика удаления старых чанков
-        // Можно удалить из vector_store по метаданным
-        log.info("Удаляем старые чанки для книги {}", bookId);
-    }
 
-    private void updateBookStatus(UUID bookId, int totalChunks) {
-        // Обновляем статус в таблице works
-        log.info("Обновляем статус книги {}: {} чанков", bookId, totalChunks);
-    }
 }
