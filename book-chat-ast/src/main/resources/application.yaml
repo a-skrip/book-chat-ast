@@ -45,3 +45,8 @@ spring:
   liquibase:
     change-log: db/changelog/db.changelog-master.sql
     enabled: true
+
+springdoc:
+  api-docs:
+    enabled: true
+
