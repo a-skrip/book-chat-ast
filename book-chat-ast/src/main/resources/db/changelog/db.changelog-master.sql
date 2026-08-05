@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS chats
 CREATE TABLE IF NOT EXISTS messages
 (
     id           UUID PRIMARY KEY,
-    text VARCHAR(400),
+    text         VARCHAR(400),
     chat_id      UUID NOT NULL,
     message_role VARCHAR(10),
     created_at   TIMESTAMP DEFAULT now(),
@@ -67,6 +67,16 @@ CREATE TABLE IF NOT EXISTS messages
         FOREIGN KEY (chat_id) REFERENCES chats (id)
 );
 
+--changeset AlexeySkripnichenko:7
+CREATE TABLE IF NOT EXISTS admins
+(
+    id            UUID PRIMARY KEY,
+    name          VARCHAR(20),
+    role          VARCHAR(10),
+    surname       VARCHAR(35),
+    email         VARCHAR(50),
+    password_hash VARCHAR(100)
+)
 
 
 

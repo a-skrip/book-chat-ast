@@ -56,4 +56,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleChatNotFoundException(ChatNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
+
+    @ExceptionHandler(AdminAlreadyExistException.class)
+    public ResponseEntity<String> handleAdminAlreadyExistException(AdminAlreadyExistException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+    @ExceptionHandler(AdminNotFoundException.class)
+    public ResponseEntity<String> handleAdminNotFoundException(AdminNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
 }

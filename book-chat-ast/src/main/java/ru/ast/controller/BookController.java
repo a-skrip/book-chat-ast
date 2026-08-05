@@ -1,7 +1,9 @@
 package ru.ast.controller;
 
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ru.ast.dto.BookRequestDto;
 import ru.ast.dto.BookResponseDto;
@@ -11,13 +13,11 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/books")
+@PreAuthorize("hasAnyRole('ADMIN')")
+@AllArgsConstructor
 public class BookController {
 
     private final BookService bookService;
-
-    public BookController(BookService bookService) {
-        this.bookService = bookService;
-    }
 
     @PostMapping
     public ResponseEntity<BookResponseDto> addBook(@RequestBody BookRequestDto bookDto) {
@@ -25,8 +25,8 @@ public class BookController {
         return ResponseEntity.ofNullable(response);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<BookResponseDto> getBookById(@RequestParam UUID bookId) {
+    @GetMapping("/{bookId}")
+    public ResponseEntity<BookResponseDto> getBookById(@PathVariable UUID bookId) {
         BookResponseDto response = bookService.getBook(bookId);
         return ResponseEntity.ofNullable(response);
 
