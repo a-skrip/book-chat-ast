@@ -18,8 +18,8 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     @Query(value = """
             SELECT * FROM messages
             WHERE chat_id = :chatId AND message_role = 'USER'
-            ORDER BY created_at DESC LIMIT 1
+            ORDER BY created_at ASC LIMIT 1
             """
             , nativeQuery = true)
-    Message findLastMessageFromReader(UUID chatId);
+    Message findFirstMessageFromReader(UUID chatId);
 }

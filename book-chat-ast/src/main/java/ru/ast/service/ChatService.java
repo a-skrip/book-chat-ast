@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.ast.dto.ChatRequestDto;
 import ru.ast.dto.ChatWithMessageDto;
 import ru.ast.dto.MessageDto;
-import ru.ast.dto.ReaderSessionDto;
+import ru.ast.dto.ReaderSessionInfoDto;
 import ru.ast.entity.*;
 import ru.ast.entity.Character;
 import ru.ast.enums.MessageRole;
@@ -85,11 +85,11 @@ public class ChatService {
         return response;
     }
 
-    public ReaderSessionDto getSession(UUID sessionId) {
+    public ReaderSessionInfoDto getSessionInfo(UUID sessionId) {
         ReaderSession session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new SessionNotFoundException(sessionId));
 
-        ReaderSessionDto response = new ReaderSessionDto();
+        ReaderSessionInfoDto response = new ReaderSessionInfoDto();
         response.setSessionId(session.getId());
 
         List<Chat> chats = session.getChats();
@@ -97,15 +97,14 @@ public class ChatService {
 
         List<MessageDto> messageDtoList = new ArrayList<>();
         for (Chat chat : chats) {
-            Message message = messageRepository.findLastMessageFromReader(chat.getId());
+            Message message = messageRepository.findFirstMessageFromReader(chat.getId());
             MessageDto dto = MessagesMapper.toDto(message);
 
             messageDtoList.add(dto);
         }
-        response.setMessages(messageDtoList);
+        response.setChats(messageDtoList);
         return response;
     }
-
 
     private ReaderSession createReaderSession(Reader reader, Book book) {
         ReaderSession readerSession = new ReaderSession();
