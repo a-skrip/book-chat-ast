@@ -35,7 +35,6 @@ public class CharacterService {
     private final CharacterRepository characterRepository;
     private final ObjectMapper objectMapper;
     private final BookRepository bookRepository;
-    private final ChatRepository chatRepository;
 
 
     public List<CharacterDto> findCharacters(UUID bookId) {

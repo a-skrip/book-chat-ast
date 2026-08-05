@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.ast.dto.BookRequestDto;
 import ru.ast.dto.BookResponseDto;
 import ru.ast.entity.Book;
+import ru.ast.enums.BookStatus;
 import ru.ast.exceptions.BookIsExistException;
 import ru.ast.exceptions.BookNotFoundException;
 import ru.ast.mapper.BookMapper;
@@ -53,6 +54,7 @@ public class BookService {
         entity.setTitle(title);
         entity.setUploadPath(uploadedPath);
         entity.setFullText(fullText);
+        entity.setStatus(BookStatus.UPLOADED);
 
         Book savedBook = bookRepository.save(entity);
         UUID bookId = savedBook.getId();
@@ -62,5 +64,18 @@ public class BookService {
         bookProcessingService.processBook(bookId);
 
         return BookMapper.toDto(savedBook);
+    }
+
+    public boolean deleteBook(UUID bookId) {
+        boolean isExist = bookRepository.existsBookById(bookId);
+
+        if (isExist) {
+            Book book = bookRepository.findById(bookId)
+                    .orElseThrow(() -> new BookNotFoundException(bookId));
+            book.setStatus(BookStatus.DELETED);
+            bookRepository.save(book);
+            return true;
+        }
+        return false;
     }
 }
