@@ -25,9 +25,9 @@ public class AdminService {
         Admin admin = new Admin();
 
         String encodePassword = passwordEncoder.encode(request.password());
-        if (adminRepository.findByName(request.name())
+        if (adminRepository.findByEmail(request.name())
                 .isPresent()) {
-            throw new AdminAlreadyExistException(String.format("Учетная запись : \"%s\" существует:", request.email()));
+            throw new AdminAlreadyExistException(String.format("Учетная запись: \"%s\" существует:", request.email()));
         }
         admin.setName(request.name());
         admin.setSurname(request.surname());
