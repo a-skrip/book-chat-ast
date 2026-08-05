@@ -68,11 +68,11 @@
         <!--            <scope>runtime</scope>-->
         <!--        </dependency>-->
 
-        <!-- Validation -->
-        <!--        <dependency>-->
-        <!--            <groupId>org.springframework.boot</groupId>-->
-        <!--            <artifactId>spring-boot-starter-validation</artifactId>-->
-        <!--        </dependency>-->
+         <!-- Validation -->
+                <dependency>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-validation</artifactId>
+                </dependency>
 
         <!-- Ollama-интеграция (опционально) -->
         <dependency>

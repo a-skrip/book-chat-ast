@@ -1,6 +1,7 @@
 package ru.ast.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ public class AdminController {
     private final AdminService adminService;
 
     @PostMapping("/register")
-    public ResponseEntity<AdminDto> createAdmin(@RequestBody RegisterAdminRequest request) {
+    public ResponseEntity<AdminDto> createAdmin(@RequestBody @Valid RegisterAdminRequest request) {
         AdminDto dto = adminService.createAdmin(request);
         return ResponseEntity.created(URI.create("/admins/register" + dto.getId()))
                 .body(dto);
