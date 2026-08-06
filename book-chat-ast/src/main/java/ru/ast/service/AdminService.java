@@ -13,6 +13,8 @@ import ru.ast.exceptions.AdminAlreadyExistException;
 import ru.ast.mapper.AdminMapper;
 import ru.ast.repository.AdminRepository;
 
+import java.util.List;
+
 @Service
 @AllArgsConstructor
 public class AdminService {
@@ -38,5 +40,12 @@ public class AdminService {
         Admin saved = adminRepository.save(admin);
 
         return AdminMapper.toDto(saved);
+    }
+
+    public List<AdminDto> getAllAdmins() {
+        return adminRepository.findAll()
+                .stream()
+                .map(AdminMapper::toDto)
+                .toList();
     }
 }

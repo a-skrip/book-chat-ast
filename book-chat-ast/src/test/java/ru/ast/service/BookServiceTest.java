@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.ast.dto.BookResponseDto;
 import ru.ast.entity.Book;
+import ru.ast.enums.BookStatus;
 import ru.ast.exceptions.BookNotFoundException;
 import ru.ast.repository.BookRepository;
 
@@ -27,7 +28,7 @@ class BookServiceTest {
     private BookRepository repository;
 
     @InjectMocks
-    private BookService service;
+    private BookService service ;
 
     private UUID uuid;
     private Book book;
@@ -42,6 +43,7 @@ class BookServiceTest {
         book.setTitle("Герой нашего времени");
         book.setFullText("Полный текст книги...");
         book.setUploadPath("/input/file/test.txt");
+        book.setStatus(BookStatus.UPLOADED);
         book.setCreatedAt(LocalDateTime.now());
         book.setUpdatedAt(LocalDateTime.now());
     }
@@ -72,7 +74,7 @@ class BookServiceTest {
         //act assert
         assertThatThrownBy(() -> service.getBook(nonExistentUuid))
                 .isInstanceOf(BookNotFoundException.class)
-                .hasMessage("Книга с id: " + nonExistentUuid + " не найдена");
+                .hasMessage("Книга c id: " + nonExistentUuid + " не существует в системе");
     }
 
 }
