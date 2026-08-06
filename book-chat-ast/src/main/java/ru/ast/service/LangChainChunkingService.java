@@ -34,9 +34,7 @@ public class LangChainChunkingService {
 
         // 3. Конвертируем в Spring AI Document
         List<org.springframework.ai.document.Document> chunks = new ArrayList<>();
-        for (int i = 0; i < segments.size(); i++) {
-            TextSegment segment = segments.get(i);
-
+        for (TextSegment segment : segments) {
             // ✅ Правильное преобразование Metadata в Map
 
             // Копируем все поля из Metadata

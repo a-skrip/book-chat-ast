@@ -6,57 +6,20 @@ spring:
     name: book-chat
 
   ai:
-    openai:
+    mistralai:
       base-url: https://api.mistral.ai
       api-key: ${MISTRAL_API_KEY}
       chat:
         options:
           model: mistral-large-latest
-          temperature: 0.5
+          temperature: 0.2
           max-tokens: 256
-      # Эмбеддинги — локальный llama.cpp
-
       embedding:
-        base-url: http://localhost:8082
-        api-key: dummy-key
+        base-url: https://api.mistral.ai
+        api-key: ${MISTRAL_API_KEY}
+
         options:
-          dimensions: 1024
-          model: Qwen3-Embedding-0.6B-f16
-    #    ollama:
-#      base-url: http://localhost:11434
-#      chat:
-#        options:
-#          model: deepseek-r1:1.5b
-#          temperature: 0.5 # Меньше креативности = быстрее
-#          num_predict: 1024 # Короткие ответы
-#          num_ctx: 4096   # Контекстное окно
-#      embedding:
-#        options:
-#          model: nomic-embed-text:latest
-
-#    openai:
-#      # Чат — Mistral AI (облако)
-#      base-url: https://api.mistral.ai/v1
-#      api-key: ${MISTRAL_API_KEY}
-#      chat:
-#        options:
-#          model: mistral-large-latest
-#          temperature: 0.5
-#          max-tokens: 256
-#      # Эмбеддинги — локальный llama.cpp
-#      embedding:
-#        base-url: http://localhost:8082
-#        api-key: dummy-key
-#        options:
-#          dimensions: 1024
-#          model: Qwen3-Embedding-0.6B-f16
-
-#    vectorstore:
-#      pgvector:
-#        initialize-schema: true
-#        dimensions: 768  # Размерность
-#        index-type: HNSW
-#        distance-type: COSINE_DISTANCE    # Для индексации: "search_document: "
+          model: mistral-embed-2312
     vectorstore:
       pgvector:
         initialize-schema: true
@@ -73,7 +36,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -82,3 +45,8 @@ spring:
   liquibase:
     change-log: db/changelog/db.changelog-master.sql
     enabled: true
+
+springdoc:
+  api-docs:
+    enabled: true
+

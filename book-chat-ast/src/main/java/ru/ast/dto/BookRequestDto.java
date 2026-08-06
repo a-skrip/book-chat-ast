@@ -1,4 +1,4 @@
 package ru.ast.dto;
 
-public record BookRequestDto(String path) {
+public record BookRequestDto(String path, String title) {
 }

@@ -41,7 +41,6 @@ public class FileUploadService {
             Files.copy(pathToFile, pathFile, StandardCopyOption.REPLACE_EXISTING);
             log.info("Файл cкопирован {} -> {}", pathToFile, pathFile.toAbsolutePath());
 
-
         } catch (IOException e) {
             log.error("Ошибка копирования файла {} -> {} ", path, e.getMessage());
         }

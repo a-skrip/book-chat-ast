@@ -9,7 +9,7 @@ public class BookMapper {
         dto.setId(entity.getId());
         dto.setTitle(entity.getTitle());
         dto.setFullText((entity.getFullText()));
-        dto.setStatus(entity.getStatus());
+        dto.setStatus(entity.getStatus().toString());
         dto.setUploadPath(entity.getUploadPath());
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setUpdatedAt(entity.getUpdatedAt());
