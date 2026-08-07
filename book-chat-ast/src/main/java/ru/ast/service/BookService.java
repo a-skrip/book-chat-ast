@@ -27,9 +27,14 @@ public class BookService {
     private final BookProcessingService bookProcessingService;
 
     public BookResponseDto getBook(UUID bookId) {
-        return BookMapper.toDto(bookRepository.findById(bookId)
+       log.info("Получение книги по id: {}",bookId);
+        Book book = bookRepository.findById(bookId)
                 .orElseThrow(
-                        () -> new BookNotFoundException(bookId)));
+                        () -> {
+                            log.warn("Передан не существующий ID: {}",bookId);
+                            return new BookNotFoundException(bookId);
+                        });
+        return BookMapper.toDto(book);
     }
 
     public BookResponseDto saveBook(BookRequestDto bookRequestDto) {

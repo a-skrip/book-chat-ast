@@ -50,7 +50,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         // Публичные эндпоинты
-                        .requestMatchers("/admins/register").permitAll()
+                        .requestMatchers("/admins/**").permitAll()
+                        .requestMatchers("/chats").permitAll()
 //                        .requestMatchers("/books/**").permitAll()
                         // Swagger UI и OpenAPI
                         .requestMatchers("/swagger-ui/**","/v3/api-docs/**").permitAll()
