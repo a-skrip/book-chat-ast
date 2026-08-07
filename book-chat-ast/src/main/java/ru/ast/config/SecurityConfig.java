@@ -53,7 +53,7 @@ public class SecurityConfig {
                         .requestMatchers("/admins/**").permitAll()
                         .requestMatchers("/chats").permitAll()
                         .requestMatchers("/books/**").permitAll()
-//                        .requestMatchers("/books/**").permitAll()
+                        .requestMatchers("/characters/**").permitAll()
                         // Swagger UI и OpenAPI
                         .requestMatchers("/swagger-ui/**","/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated()

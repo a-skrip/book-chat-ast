@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
-import ru.ast.dto.CharacterDto;
+import ru.ast.dto.CharactersResponseDto;
 import ru.ast.entity.Book;
 import ru.ast.enums.BookStatus;
 import ru.ast.exceptions.BookNotFoundException;
@@ -23,7 +23,7 @@ public class BookProcessingService {
     private final LangChainChunkingService chunkingService;
     private final VectorStore vectorStore;
     private final BookRepository bookRepository;
-    private final CharacterService characterExtractor;
+    private final CharacterService characterService;
 
     private static final int BATCH_SIZE = 10;
     private static final int SLEEP_TIME = 30_000;
@@ -96,9 +96,10 @@ public class BookProcessingService {
 
             log.info("Статус для bookId {} - {}", bookId, savedBook.getStatus());
 
-            List<CharacterDto> characters = characterExtractor.findCharacters(savedBook.getId());
-            log.info("В произведении найдено: {} персонажей. Characters: {}"
-                    , characters.size(), characters.toString());
+            CharactersResponseDto characters = characterService.extractCharacters(savedBook.getId());
+            log.info("В книге id: {}, найдено: {} персонажей",
+                    savedBook.getId(),
+                    characters.getCharacters().size());
         }
     }
 
