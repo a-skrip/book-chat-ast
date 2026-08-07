@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ru.ast.dto.AdminDto;
-import ru.ast.dto.RegisterAdminRequest;
+import ru.ast.dto.request.RegisterAdminRequest;
 import ru.ast.service.AdminService;
 
 import java.net.URI;

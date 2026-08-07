@@ -1,6 +1,6 @@
 package ru.ast.mapper;
 
-import ru.ast.dto.BookResponseDto;
+import ru.ast.dto.response.BookResponseDto;
 import ru.ast.entity.Book;
 
 public class BookMapper {

@@ -1,6 +1,7 @@
-package ru.ast.dto;
+package ru.ast.dto.response;
 
 import lombok.Data;
+import ru.ast.dto.ChunkDto;
 
 import java.util.List;
 

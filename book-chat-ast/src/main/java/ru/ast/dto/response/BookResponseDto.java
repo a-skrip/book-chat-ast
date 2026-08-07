@@ -1,4 +1,4 @@
-package ru.ast.dto;
+package ru.ast.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

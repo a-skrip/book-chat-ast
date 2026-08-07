@@ -10,7 +10,7 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
-import ru.ast.dto.CharacterRequestDto;
+import ru.ast.dto.request.CharacterRequestDto;
 import ru.ast.dto.CharacterResponseDto;
 import ru.ast.dto.CharactersResponseDto;
 import ru.ast.entity.Book;

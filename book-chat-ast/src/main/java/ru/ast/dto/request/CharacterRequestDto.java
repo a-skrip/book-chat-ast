@@ -1,4 +1,4 @@
-package ru.ast.dto;
+package ru.ast.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -7,9 +7,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import ru.ast.dto.BookRequestDto;
-import ru.ast.dto.BookResponseDto;
-import ru.ast.dto.ChunksResponseDto;
+import ru.ast.dto.request.BookRequestDto;
+import ru.ast.dto.response.BookResponseDto;
+import ru.ast.dto.response.ChunksResponseDto;
 import ru.ast.service.BookService;
 
 import java.io.IOException;

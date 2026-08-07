@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import ru.ast.dto.CharacterRequestDto;
+import ru.ast.dto.request.CharacterRequestDto;
 import ru.ast.dto.CharacterResponseDto;
 import ru.ast.dto.CharactersResponseDto;
 import ru.ast.service.CharacterService;
