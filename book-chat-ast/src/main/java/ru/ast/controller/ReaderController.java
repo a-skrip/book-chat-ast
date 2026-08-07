@@ -17,6 +17,7 @@ public class ReaderController {
 
     private final ReaderService readerService;
 
+    //TODO реализовать автоматическое создание пользователя при псканировании QR
     @PostMapping("/readers")
     public ResponseEntity<ReaderDto> createReader(@RequestParam String name) {
         ReaderDto readerDto = readerService.saveReader(name);

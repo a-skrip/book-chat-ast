@@ -4,17 +4,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
 import org.springframework.stereotype.Service;
-import ru.ast.dto.BookRequestDto;
-import ru.ast.dto.BookResponseDto;
+import ru.ast.dto.request.BookRequestDto;
+import ru.ast.dto.response.BookResponseDto;
+import ru.ast.dto.ChunkDto;
+import ru.ast.dto.response.ChunksResponseDto;
 import ru.ast.entity.Book;
 import ru.ast.enums.BookStatus;
 import ru.ast.exceptions.BookIsExistException;
 import ru.ast.exceptions.BookNotFoundException;
 import ru.ast.mapper.BookMapper;
 import ru.ast.repository.BookRepository;
+import ru.ast.repository.VectorStoreRepository;
 import ru.ast.util.TextExtractor;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -25,16 +29,26 @@ public class BookService {
     private final BookRepository bookRepository;
     private final FileUploadService fileUploadService;
     private final BookProcessingService bookProcessingService;
+    private final VectorStoreRepository vectorStore;
 
     public BookResponseDto getBook(UUID bookId) {
-       log.info("Получение книги по id: {}",bookId);
+        log.info("Получение книги по id: {}", bookId);
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(
                         () -> {
-                            log.warn("Передан не существующий ID: {}",bookId);
+                            log.warn("Передан не существующий ID: {}", bookId);
                             return new BookNotFoundException(bookId);
                         });
         return BookMapper.toDto(book);
+    }
+
+    public List<BookResponseDto> getAll() {
+        log.info("Получение всех произведений ");
+        List<Book> bookList = bookRepository.findAll();
+        return bookList.stream()
+                .filter(el -> !el.getStatus().equals(BookStatus.DELETED))
+                .map(BookMapper::toDto)
+                .toList();
     }
 
     public BookResponseDto saveBook(BookRequestDto bookRequestDto) {
@@ -82,5 +96,16 @@ public class BookService {
             return true;
         }
         return false;
+    }
+
+    public ChunksResponseDto getAllChunks(UUID bookId) {
+        ChunksResponseDto responseDto = new ChunksResponseDto();
+        List<ChunkDto> allChunks = vectorStore.getAllChunks(bookId);
+        responseDto.setBookId(bookId.toString());
+        responseDto.setAllChunks(allChunks);
+        responseDto.setChunkCount(allChunks.size());
+
+        return responseDto;
+
     }
 }

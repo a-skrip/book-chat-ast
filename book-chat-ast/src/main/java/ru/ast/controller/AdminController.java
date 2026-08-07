@@ -5,9 +5,10 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ru.ast.dto.AdminDto;
-import ru.ast.dto.RegisterAdminRequest;
+import ru.ast.dto.request.RegisterAdminRequest;
 import ru.ast.service.AdminService;
 
 import java.net.URI;
@@ -31,6 +32,7 @@ public class AdminController {
     }
     //TODO переделать на получение всех пользователей и открыть только для админов
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<List<AdminDto>> getAllAdmins() {
         return ResponseEntity.ok(adminService.getAllAdmins());
     }

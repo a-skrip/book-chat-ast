@@ -1,4 +1,4 @@
-package ru.ast.dto;
+package ru.ast.dto.request;
 
 import java.util.UUID;
 
@@ -6,5 +6,4 @@ public record ChatRequestDto(
         UUID bookId,
         UUID readerId,
         UUID characterId,
-        String message) {
-}
+        String message) {}

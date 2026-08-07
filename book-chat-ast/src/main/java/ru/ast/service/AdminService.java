@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.ast.dto.AdminDto;
-import ru.ast.dto.RegisterAdminRequest;
+import ru.ast.dto.request.RegisterAdminRequest;
 import ru.ast.entity.Admin;
 import ru.ast.enums.Role;
 import ru.ast.exceptions.AdminAlreadyExistException;

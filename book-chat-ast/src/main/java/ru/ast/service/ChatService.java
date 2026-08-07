@@ -3,10 +3,10 @@ package ru.ast.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.ast.dto.ChatRequestDto;
-import ru.ast.dto.ChatWithMessageDto;
+import ru.ast.dto.request.ChatRequestDto;
+import ru.ast.dto.response.ChatWithMessageResponseDto;
 import ru.ast.dto.MessageDto;
-import ru.ast.dto.ReaderSessionInfoDto;
+import ru.ast.dto.response.ReaderSessionResponseDto;
 import ru.ast.entity.*;
 import ru.ast.entity.Character;
 import ru.ast.enums.MessageRole;
@@ -33,7 +33,7 @@ public class ChatService {
     private final ReaderRepository readerRepository;
 
 
-    public ChatWithMessageDto startChat(ChatRequestDto request) {
+    public ChatWithMessageResponseDto startChat(ChatRequestDto request) {
 
         Book book = bookRepository.findById(request.bookId())
                 .orElseThrow(() -> new BookNotFoundException(request.bookId()));
@@ -75,9 +75,12 @@ public class ChatService {
         Message answer = createMessage(chat, MessageRole.SYSTEM, answerFromModel);
         messageRepository.save(answer);
 
-        ChatWithMessageDto response = new ChatWithMessageDto();
+        ChatWithMessageResponseDto response = new ChatWithMessageResponseDto();
         response.setChatId(chat.getId().toString());
-        response.setCharacterId(character.getId().toString());
+        response.setTitle(book.getTitle());
+        response.setCharacterName(character.getName());
+        response.setReaderId(reader.getId().toString());
+        response.setReaderSession(session.getId().toString());
 
         List<MessageDto> chatHistory = getChatHistory(chat.getId());
         response.setMessages(chatHistory);
@@ -85,11 +88,11 @@ public class ChatService {
         return response;
     }
 
-    public ReaderSessionInfoDto getSessionInfo(UUID sessionId) {
+    public ReaderSessionResponseDto getSessionInfo(UUID sessionId) {
         ReaderSession session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new SessionNotFoundException(sessionId));
 
-        ReaderSessionInfoDto response = new ReaderSessionInfoDto();
+        ReaderSessionResponseDto response = new ReaderSessionResponseDto();
         response.setSessionId(session.getId());
 
         List<Chat> chats = session.getChats();
