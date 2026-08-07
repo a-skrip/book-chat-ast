@@ -9,12 +9,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.ast.dto.BookRequestDto;
 import ru.ast.dto.BookResponseDto;
+import ru.ast.dto.ChunksResponseDto;
 import ru.ast.service.BookService;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -31,6 +33,7 @@ public class BookController {
         return ResponseEntity.ofNullable(response);
     }
 
+    // Новый эндпоинт для загрузки файла через форму
     @PreAuthorize("hasAnyRole('ADMIN')")
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadBook(
@@ -58,14 +61,25 @@ public class BookController {
             return ResponseEntity.status(500).build();
         }
     }
-    // Новый эндпоинт для загрузки файла через форму
 
     @GetMapping("/{bookId}")
-    public ResponseEntity<BookResponseDto> getBookById(@PathVariable UUID bookId) {
+    public ResponseEntity<BookResponseDto> getBook(@PathVariable UUID bookId) {
         BookResponseDto response = bookService.getBook(bookId);
         return ResponseEntity.ofNullable(response);
-
     }
+
+    @GetMapping
+    public ResponseEntity<List<BookResponseDto>> getAllBooks() {
+        List<BookResponseDto> response = bookService.getAll();
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{bookId}/chunks")
+    public ResponseEntity<ChunksResponseDto> getChunks(@PathVariable UUID bookId) {
+        ChunksResponseDto allChunks = bookService.getAllChunks(bookId);
+        return ResponseEntity.ok(allChunks);
+    }
+
 
     @PreAuthorize("hasAnyRole('ADMIN')")
     @DeleteMapping("/{bookId}")
