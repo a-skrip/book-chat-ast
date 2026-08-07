@@ -19,7 +19,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/books")
-@PreAuthorize("hasAnyRole('ADMIN')")
 @AllArgsConstructor
 public class BookController {
 
@@ -32,7 +31,7 @@ public class BookController {
         return ResponseEntity.ofNullable(response);
     }
 
-    // Новый эндпоинт для загрузки файла через форму
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadBook(
             @RequestParam("file") MultipartFile file,
@@ -59,6 +58,7 @@ public class BookController {
             return ResponseEntity.status(500).build();
         }
     }
+    // Новый эндпоинт для загрузки файла через форму
 
     @GetMapping("/{bookId}")
     public ResponseEntity<BookResponseDto> getBookById(@PathVariable UUID bookId) {
@@ -67,6 +67,7 @@ public class BookController {
 
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @DeleteMapping("/{bookId}")
     public ResponseEntity<String> deleteBook(@PathVariable UUID bookId) {
         boolean deleted = bookService.deleteBook(bookId);
