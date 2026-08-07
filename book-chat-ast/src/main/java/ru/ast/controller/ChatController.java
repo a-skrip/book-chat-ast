@@ -25,8 +25,8 @@ public class ChatController {
         return chatService.startChat(chatRequestDto);
     }
 
-    @GetMapping()
-    public ResponseEntity<ReaderSessionResponseDto> getLastChats(@RequestParam UUID sessionId) {
+    @GetMapping("/{sessionId}")
+    public ResponseEntity<ReaderSessionResponseDto> getLastChats(@PathVariable UUID sessionId) {
         ReaderSessionResponseDto session = chatService.getSessionInfo(sessionId);
         return ResponseEntity.ok(session);
     }
