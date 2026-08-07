@@ -77,7 +77,10 @@ public class ChatService {
 
         ChatWithMessageResponseDto response = new ChatWithMessageResponseDto();
         response.setChatId(chat.getId().toString());
-        response.setCharacterId(character.getId().toString());
+        response.setTitle(book.getTitle());
+        response.setCharacterName(character.getName());
+        response.setReaderId(reader.getId().toString());
+        response.setReaderSession(session.getId().toString());
 
         List<MessageDto> chatHistory = getChatHistory(chat.getId());
         response.setMessages(chatHistory);
