@@ -17,12 +17,11 @@ public class CharacterMapper {
     }
 
     public static CharacterResponseDto toDto(Character character) {
-        CharacterResponseDto dto = new CharacterResponseDto(
+        return new CharacterResponseDto(
                 character.getId(),
                 character.getName(),
                 character.isEnabled(),
                 character.getAvatarPath()
         );
-        return dto;
     }
 }

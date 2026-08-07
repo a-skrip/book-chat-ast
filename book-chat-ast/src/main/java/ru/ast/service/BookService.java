@@ -3,7 +3,6 @@ package ru.ast.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
-import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
 import ru.ast.dto.BookRequestDto;
 import ru.ast.dto.BookResponseDto;
@@ -20,7 +19,6 @@ import ru.ast.util.TextExtractor;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -34,11 +32,11 @@ public class BookService {
     private final VectorStoreRepository vectorStore;
 
     public BookResponseDto getBook(UUID bookId) {
-       log.info("Получение книги по id: {}",bookId);
+        log.info("Получение книги по id: {}", bookId);
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(
                         () -> {
-                            log.warn("Передан не существующий ID: {}",bookId);
+                            log.warn("Передан не существующий ID: {}", bookId);
                             return new BookNotFoundException(bookId);
                         });
         return BookMapper.toDto(book);
