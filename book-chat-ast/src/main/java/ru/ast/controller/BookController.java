@@ -36,7 +36,7 @@ public class BookController {
     // Новый эндпоинт для загрузки файла через форму
     @PreAuthorize("hasAnyRole('ADMIN')")
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> uploadBook(
+    public ResponseEntity<BookResponseDto> uploadBook(
             @RequestParam("file") MultipartFile file,
             @RequestParam("title") String title) {
 
