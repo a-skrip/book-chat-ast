@@ -7,10 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.ast.dto.request.RequestQRGenerate;
 import ru.ast.service.QRCodeService;
 
@@ -29,7 +26,7 @@ public class QRController {
      */
     @Operation(summary = "Сгенерировать QR-код для чата",
             description = "Возвращает QR-код со ссылкой на чат")
-    @GetMapping(value = "/chat", produces = MediaType.IMAGE_PNG_VALUE)
+    @PostMapping(value = "/chat", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> generateChatQR(@RequestBody RequestQRGenerate request) {
 
 
