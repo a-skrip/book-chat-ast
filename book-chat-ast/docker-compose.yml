@@ -3,8 +3,8 @@ services:
     image: pgvector/pgvector:pg17
     container_name: pgvector_db
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: books_db
     ports:
       - "5433:5432"
@@ -27,8 +27,8 @@ services:
     container_name: java_app
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/books_db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       SPRING_PROFILES_ACTIVE: prod
       MISTRAL_API_KEY: ${MISTRAL_API_KEY}
       SERVER_PORT: 8080

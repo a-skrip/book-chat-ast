@@ -40,21 +40,6 @@ public class BookController {
             summary = "Добавить новую книгу",
             description = "Сохраняет книгу из указанного локального пути и разбивает на фрагменты. Тяжелая операция "
     )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Книга успешно создана",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = BookResponseDto.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Неверные данные запроса",
-                    content = @Content
-            ),
-    })
     @PostMapping
     public ResponseEntity<BookResponseDto> addBook(@RequestBody BookRequestDto bookDto) {
         BookResponseDto response = bookService.saveBook(bookDto);
