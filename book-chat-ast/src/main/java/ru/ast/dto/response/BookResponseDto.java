@@ -18,6 +18,7 @@ public class BookResponseDto {
     private String fullText;
     private String status;
     private String uploadPath;
+    private String qrQode;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

@@ -11,6 +11,7 @@ public class BookMapper {
         dto.setFullText((entity.getFullText()));
         dto.setStatus(entity.getStatus().toString());
         dto.setUploadPath(entity.getUploadPath());
+        dto.setQrQode(entity.getQrCode());
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setUpdatedAt(entity.getUpdatedAt());
         return dto;
