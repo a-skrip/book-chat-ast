@@ -58,7 +58,7 @@ public class ChatService {
 
         response.setSessionId(readerSession.getId().toString());
         response.setBookId(bookId.toString());
-        response.setReaderId(readerSession.getId().toString());
+        response.setReaderId(readerSession.getReader().getId().toString());
         response.setBookTitle(book.getTitle());
         response.setCharacters(CharacterMapper.toDtoList(characters));
         response.setExistingChats(ChatMapper.toDtoList(chatsBySessionId));
@@ -141,7 +141,7 @@ public class ChatService {
 
     private List<MessageDto> getChatHistoryForModel(UUID chatId) {
         List<Message> history = messageRepository
-                .findTop5ByChatIdOrderByCreatedAtDesc(chatId);
+                .findTop7ByChatIdOrderByCreatedAtDesc(chatId);
         List<Message> reversed = history.reversed();
         return MessagesMapper.toDtoList(reversed);
     }
