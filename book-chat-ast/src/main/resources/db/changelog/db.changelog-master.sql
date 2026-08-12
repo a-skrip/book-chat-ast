@@ -76,8 +76,11 @@ CREATE TABLE IF NOT EXISTS admins
     surname       VARCHAR(35),
     email         VARCHAR(50),
     password_hash VARCHAR(100)
-)
+);
 
+--changeset AlexeySkripnichenko:8
+ALTER TABLE books
+ADD COLUMN qr_code TEXT;
 
 
 

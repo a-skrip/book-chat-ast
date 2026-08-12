@@ -6,4 +6,5 @@ public record ChatRequestDto(
         UUID bookId,
         UUID readerId,
         UUID characterId,
+        UUID sessionId,
         String message) {}

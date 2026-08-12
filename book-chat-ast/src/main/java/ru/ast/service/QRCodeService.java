@@ -5,25 +5,54 @@ import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.ast.dto.request.RequestQRGenerate;
+import ru.ast.entity.Book;
+import ru.ast.exceptions.BookNotFoundException;
+import ru.ast.repository.BookRepository;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Base64;
+import java.util.UUID;
 
 @Slf4j
 @Service
+@AllArgsConstructor
 public class QRCodeService {
 
-    private static final int DEFAULT_WIDTH = 500;
-    private static final int DEFAULT_HEIGHT = 500;
+    private final BookRepository bookRepository;
+
+    private static final int DEFAULT_WIDTH = 300;
+    private static final int DEFAULT_HEIGHT = 300;
 
     /**
      * Генерирует QR-код как массив байтов (PNG)
      */
-    public byte[] generateQRCodeBytes(String content) {
-        return generateQRCodeBytes(content, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    public byte[] generateQRCodeBytes(RequestQRGenerate request) {
+        UUID bookId = UUID.fromString(request.getBookId());
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("http://")
+                .append(request.getHost())
+                .append(":")
+                .append(request.getPort())
+                .append(request.getUrl())
+                .append(request.getBookId());
+        log.info("Сформирован URL {}", builder);
+
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BookNotFoundException(bookId));
+
+        String qrCodeBase64 = generateQRCodeBase64(builder.toString());
+        book.setQrCode(qrCodeBase64);
+        bookRepository.save(book);
+        log.info("QR сохранен для книги: {}", book.getTitle());
+
+
+        return generateQRCodeBytes(builder.toString(), DEFAULT_WIDTH, DEFAULT_HEIGHT);
     }
 
     /**
@@ -54,28 +83,11 @@ public class QRCodeService {
     }
 
     /**
-     * Генерирует QR-код как Base64-строку (data:image/png;base64,...)
-     */
-    public String generateQRCodeBase64(String content) {
-        return generateQRCodeBase64(content, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-    }
-
-    /**
      * Генерирует QR-код как Base64-строку с кастомным размером
      */
-    public String generateQRCodeBase64(String content, int width, int height) {
-        byte[] imageBytes = generateQRCodeBytes(content, width, height);
+    public String generateQRCodeBase64(String content) {
+        byte[] imageBytes = generateQRCodeBytes(content, DEFAULT_WIDTH, DEFAULT_HEIGHT);
         String base64 = Base64.getEncoder().encodeToString(imageBytes);
         return "data:image/png;base64," + base64;
-    }
-
-    /**
-     * Валидация URL перед генерацией QR
-     */
-    public String validateUrl(String url) {
-        if (!url.startsWith("http://") && !url.startsWith("https://")) {
-            url = "https://" + url;
-        }
-        return url;
     }
 }

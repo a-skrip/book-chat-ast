@@ -40,6 +40,9 @@ public class Book {
     @Column(name = "uploaded_path", length = 200)
     private String uploadPath;
 
+    @Column(columnDefinition = "TEXT",name = "qr_code")
+    private String qrCode;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

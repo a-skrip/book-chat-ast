@@ -106,6 +106,5 @@ public class BookService {
         responseDto.setChunkCount(allChunks.size());
 
         return responseDto;
-
     }
 }
