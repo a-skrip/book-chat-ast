@@ -30,6 +30,7 @@ public class BookService {
     private final FileUploadService fileUploadService;
     private final BookProcessingService bookProcessingService;
     private final VectorStoreRepository vectorStore;
+    private final TextExtractor textExtractor;
 
     public BookResponseDto getBook(UUID bookId) {
         log.info("Получение книги по id: {}", bookId);
@@ -66,8 +67,9 @@ public class BookService {
         }
 
         try {
-            fullText = TextExtractor.extractTextFromFile(pathToLocalFile);
+            fullText = textExtractor.extractTextFromFile(pathToLocalFile);
         } catch (TikaException | IOException e) {
+            log.error("Ошибка извлечения текста: {}", e.getMessage());
             throw new RuntimeException(e.getMessage());
         }
         entity.setTitle(title);

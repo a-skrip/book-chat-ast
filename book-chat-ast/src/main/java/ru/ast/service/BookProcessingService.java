@@ -10,6 +10,7 @@ import ru.ast.entity.Book;
 import ru.ast.enums.BookStatus;
 import ru.ast.exceptions.BookNotFoundException;
 import ru.ast.repository.BookRepository;
+import ru.ast.util.TextNormalizer;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,6 +25,7 @@ public class BookProcessingService {
     private final VectorStore vectorStore;
     private final BookRepository bookRepository;
     private final CharacterService characterService;
+    private final TextNormalizer normalizer;
 
     private static final int BATCH_SIZE = 10;
     private static final int SLEEP_TIME = 30_000;
