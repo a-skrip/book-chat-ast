@@ -35,7 +35,7 @@ public class ChatController {
     }
 
     @GetMapping("/books/{bookId}")
-    public ResponseEntity<SessionResponse> enterBook(
+    public ResponseEntity<SessionResponse> enterBookSession(
             @PathVariable UUID bookId,
             HttpServletRequest request,
             HttpServletResponse response
