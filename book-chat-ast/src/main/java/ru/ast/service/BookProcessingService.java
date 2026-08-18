@@ -39,7 +39,7 @@ public class BookProcessingService {
                 .orElseThrow(() -> new BookNotFoundException(bookId));
 
         String fullText = book.getFullText();
-
+        String normalized = normalizer.normalize(fullText);
         if (fullText == null || fullText.isEmpty()) {
             log.error("Текст для книги {} не найден", bookId);
             return;
@@ -47,7 +47,7 @@ public class BookProcessingService {
 
         if (book.getStatus().equals(BookStatus.UPLOADED)) {
             // 2. Разбиваем на чанки
-            List<Document> allChunks = chunkingService.splitText(fullText, book.getId());
+            List<Document> allChunks = chunkingService.splitText(normalized, book.getId());
 
             log.info("Создано {} чанков", allChunks.size());
 
