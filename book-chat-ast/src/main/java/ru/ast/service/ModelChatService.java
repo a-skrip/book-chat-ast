@@ -9,6 +9,7 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
 import ru.ast.dto.MessageDto;
 import ru.ast.enums.MessageRole;
+import ru.ast.util.MistralHealthIndicator;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,6 +22,9 @@ public class ModelChatService {
 
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
+    private final MistralHealthIndicator healthIndicator;
+
+    private static final int MAX_HISTORY_MESSAGES = 10;
 
     public String getAnswerFromModel(String question, UUID bookId, String character, List<MessageDto> history) {
         long start = System.currentTimeMillis();
@@ -29,11 +33,12 @@ public class ModelChatService {
         String historyText;
 
         List<Document> chunks = findRelevantChunks(question, bookId, character);
+        log.info("Найдено релевантных чанков: {}", chunks.size());
 
         if (chunks.isEmpty()) {
             return "Чанков нет, в книге нет информации об этом";
         }
-
+//        healthIndicator.health();
         String context = chunks.stream()
                 .map(Document::getText)
                 .collect(Collectors.joining("\n\n---\n\n"));
@@ -51,6 +56,7 @@ public class ModelChatService {
                     })
                     .collect(Collectors.joining("\n"));
         }
+        log.info("История диалога: {}", historyText);
 
         String system = String.format("""
                 Ты — герой книги "Герой нашего времени" — %s.
@@ -80,7 +86,7 @@ public class ModelChatService {
                 ОТВЕТ от лица персонажа %s:
                 """, historyText, question, character);
 
-        log.info(historyText);
+//        log.info(historyText);
 
         String answer = chatClient.prompt()
                 .system(system)
@@ -90,7 +96,7 @@ public class ModelChatService {
 
         long endTime = System.currentTimeMillis();
         log.info("Модель ответила за: {} ms", endTime - start);
-
+        log.info("Ответ модели: {}", answer);
         return answer;
     }
 
@@ -103,6 +109,7 @@ public class ModelChatService {
                 .filterExpression(exp)
                 .topK(3)
                 .build();
+        log.info("Вызов similaritySearch()");
         return vectorStore.similaritySearch(searchRequest);
     }
 }

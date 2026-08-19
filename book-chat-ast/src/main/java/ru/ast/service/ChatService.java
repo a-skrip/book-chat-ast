@@ -12,7 +12,6 @@ import ru.ast.dto.response.ReaderSessionResponseDto;
 import ru.ast.dto.response.SessionResponse;
 import ru.ast.entity.*;
 import ru.ast.entity.Character;
-import ru.ast.enums.MessageRole;
 import ru.ast.exceptions.BookNotFoundException;
 import ru.ast.exceptions.CharacterNotFoundException;
 import ru.ast.exceptions.ReaderNotFoundException;
@@ -22,7 +21,6 @@ import ru.ast.mapper.ChatMapper;
 import ru.ast.mapper.MessagesMapper;
 import ru.ast.repository.*;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -40,6 +38,7 @@ public class ChatService {
     private final ReaderSessionRepository sessionRepository;
     private final ReaderRepository readerRepository;
     private final SessionService sessionService;
+    private final MessageService messageService;
 
 
     public SessionResponse startSession(UUID bookId,
@@ -55,7 +54,6 @@ public class ChatService {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(BookNotFoundException::new);
 
-
         response.setSessionId(readerSession.getId().toString());
         response.setBookId(bookId.toString());
         response.setReaderId(readerSession.getReader().getId().toString());
@@ -64,7 +62,6 @@ public class ChatService {
         response.setExistingChats(ChatMapper.toDtoList(chatsBySessionId));
 
         return response;
-
     }
 
 
@@ -89,7 +86,7 @@ public class ChatService {
         // 3. Ищем или создаём чат с этим персонажем
         Chat chat = findOrCreateChat(session, character);
 
-        sendQuestionAndSaveAnswer(chat, request.message(), request.bookId(), character.getName());
+        messageService.sendQuestionAndSaveAnswer(chat, request.message(), request.bookId(), character.getName());
 
         ChatWithMessageResponseDto response = new ChatWithMessageResponseDto();
         response.setBookId(book.getId().toString());
@@ -98,7 +95,7 @@ public class ChatService {
         response.setReaderId(reader.getId().toString());
         response.setReaderSession(session.getId().toString());
         response.setChatId(chat.getId().toString());
-        response.setMessages(getChatHistory(chat.getId()));
+        response.setMessages(messageService.getChatHistory(chat.getId()));
 
         log.info("✅ Чат {} с персонажем {} продолжен", chat.getId(), character.getName());
         return response;
@@ -124,43 +121,6 @@ public class ChatService {
         }
         response.setChats(messageDtoList);
         return response;
-    }
-
-    private Message createMessage(Chat chat, MessageRole role, String text) {
-        Message message = new Message();
-        message.setChat(chat);
-        message.setMessageRole(role);
-        message.setCreatedAt(LocalDateTime.now());
-        message.setText(text);
-        return message;
-    }
-
-    private List<MessageDto> getChatHistory(UUID chatId) {
-        return MessagesMapper.toDtoList(messageRepository.findAllByChatIdOrderByCreatedAtAsc(chatId));
-    }
-
-    private List<MessageDto> getChatHistoryForModel(UUID chatId) {
-        List<Message> history = messageRepository
-                .findTop7ByChatIdOrderByCreatedAtDesc(chatId);
-        List<Message> reversed = history.reversed();
-        return MessagesMapper.toDtoList(reversed);
-    }
-
-    private void sendQuestionAndSaveAnswer(Chat chat, String message, UUID bookId, String characterName) {
-        Message question = createMessage(chat, MessageRole.USER, message);
-        messageRepository.save(question);
-
-        List<MessageDto> chatHistoryForModel = getChatHistoryForModel(chat.getId());
-
-        String answerFromModel = modelService.getAnswerFromModel(
-                message,
-                bookId,
-                characterName,
-                chatHistoryForModel
-        );
-
-        Message answer = createMessage(chat, MessageRole.SYSTEM, answerFromModel);
-        messageRepository.save(answer);
     }
 
     private Chat findOrCreateChat(ReaderSession session, Character character) {

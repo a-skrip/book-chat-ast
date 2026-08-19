@@ -10,6 +10,7 @@ import ru.ast.entity.Book;
 import ru.ast.enums.BookStatus;
 import ru.ast.exceptions.BookNotFoundException;
 import ru.ast.repository.BookRepository;
+import ru.ast.util.TextNormalizer;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,6 +25,7 @@ public class BookProcessingService {
     private final VectorStore vectorStore;
     private final BookRepository bookRepository;
     private final CharacterService characterService;
+    private final TextNormalizer normalizer;
 
     private static final int BATCH_SIZE = 10;
     private static final int SLEEP_TIME = 30_000;
@@ -37,7 +39,7 @@ public class BookProcessingService {
                 .orElseThrow(() -> new BookNotFoundException(bookId));
 
         String fullText = book.getFullText();
-
+        String normalized = normalizer.normalize(fullText);
         if (fullText == null || fullText.isEmpty()) {
             log.error("Текст для книги {} не найден", bookId);
             return;
@@ -45,7 +47,7 @@ public class BookProcessingService {
 
         if (book.getStatus().equals(BookStatus.UPLOADED)) {
             // 2. Разбиваем на чанки
-            List<Document> allChunks = chunkingService.splitText(fullText, book.getId());
+            List<Document> allChunks = chunkingService.splitText(normalized, book.getId());
 
             log.info("Создано {} чанков", allChunks.size());
 
