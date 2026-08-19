@@ -10,8 +10,8 @@ public class ChatWithMessageResponseDto {
     private String bookId;
     private String title;
     private String characterName;
-    private String readerId;
-    private String chatId;
-    private String readerSession;
-    private List<MessageDto> messages;
+    private String model;
+    private String reply;
+    private List<MessageDto> canonChunks;
+    private boolean canonSufficient;
 }

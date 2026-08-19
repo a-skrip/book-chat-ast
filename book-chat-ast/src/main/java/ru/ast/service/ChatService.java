@@ -86,16 +86,19 @@ public class ChatService {
         // 3. Ищем или создаём чат с этим персонажем
         Chat chat = findOrCreateChat(session, character);
 
-        messageService.sendQuestionAndSaveAnswer(chat, request.message(), request.bookId(), character.getName());
+        Message message = messageService.sendQuestionAndSaveAnswer(chat,
+                request.message(),
+                request.bookId(),
+                character.getName());
 
         ChatWithMessageResponseDto response = new ChatWithMessageResponseDto();
         response.setBookId(book.getId().toString());
         response.setTitle(book.getTitle());
         response.setCharacterName(character.getName());
-        response.setReaderId(reader.getId().toString());
-        response.setReaderSession(session.getId().toString());
-        response.setChatId(chat.getId().toString());
-        response.setMessages(messageService.getChatHistory(chat.getId()));
+        response.setModel("Mistral");
+        response.setReply(message.getText());
+        response.setCanonChunks(messageService.getChatHistory(chat.getId()));
+        response.setCanonSufficient(true);
 
         log.info("✅ Чат {} с персонажем {} продолжен", chat.getId(), character.getName());
         return response;
