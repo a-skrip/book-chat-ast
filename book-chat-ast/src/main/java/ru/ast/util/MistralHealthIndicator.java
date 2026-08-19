@@ -16,17 +16,18 @@ public class MistralHealthIndicator implements HealthIndicator {
 
     @Override
     public Health health() {
-
         try {
-            // Простой ping-запрос к Mistral AI
-            // или проверка последнего успешного ответа
             String ping = "ping";
             embeddingModel.embed(ping);
+
             log.info("✅ Mistral AI доступен");
+
             return Health.up()
                     .withDetail("service", "Mistral AI")
                     .withDetail("status", "available")
                     .build();
+
+
         } catch (Exception e) {
             log.warn("❌ Mistral AI недоступен: {}", e.getMessage());
             return Health.down()
@@ -36,4 +37,7 @@ public class MistralHealthIndicator implements HealthIndicator {
         }
     }
 
+    public boolean isAvailable() {
+        return health().getStatus().getCode().equals("UP");
+    }
 }

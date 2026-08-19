@@ -20,10 +20,6 @@ public class QRController {
 
     private final QRCodeService qrCodeService;
 
-//
-    /**
-     * Сгенерировать QR-код для чата (без тела запроса, используем query param)
-     */
     @Operation(summary = "Сгенерировать QR-код для чата",
             description = "Возвращает QR-код со ссылкой на чат")
     @PostMapping(value = "/chat", produces = MediaType.IMAGE_PNG_VALUE)
