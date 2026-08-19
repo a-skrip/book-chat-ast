@@ -17,15 +17,19 @@ spring:
       embedding:
         base-url: https://api.mistral.ai
         api-key: ${MISTRAL_API_KEY}
-
         options:
-          model: mistral-embed-2312
+          model: mistral-embed
     vectorstore:
       pgvector:
         initialize-schema: true
         dimensions: 1024  # Размерность
         index-type: HNSW
         distance-type: COSINE_DISTANCE    # Для индексации: "search_document: "
+    retry:
+      max-attempts: 5
+      backoff:
+        initial-interval: 2000ms
+        multiplier: 2
 
   datasource:
     url: jdbc:postgresql://localhost:5433/books_db

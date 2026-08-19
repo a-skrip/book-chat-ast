@@ -43,6 +43,11 @@
             <artifactId>langchain4j</artifactId>
             <version>0.34.0</version>
         </dependency>
+        <!-- Spring Actuator -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
         <!-- Spring Security -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
