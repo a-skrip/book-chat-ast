@@ -22,9 +22,6 @@ public class ModelChatService {
 
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
-    private final MistralHealthIndicator healthIndicator;
-
-    private static final int MAX_HISTORY_MESSAGES = 10;
 
     public String getAnswerFromModel(String question, UUID bookId, String character, List<MessageDto> history) {
         long start = System.currentTimeMillis();
@@ -38,7 +35,6 @@ public class ModelChatService {
         if (chunks.isEmpty()) {
             return "Чанков нет, в книге нет информации об этом";
         }
-//        healthIndicator.health();
         String context = chunks.stream()
                 .map(Document::getText)
                 .collect(Collectors.joining("\n\n---\n\n"));
@@ -71,6 +67,8 @@ public class ModelChatService {
                 5. Ничего не добавляй от себя
                 6. Ничего не придумывай
                 7. Если в контексте нет информации — скажи: "В книге нет информации".
+                8. Если задан вопрос не по произведению,
+                а по истории диалога с читателем, то отвечай от лица персонажа основываясь на истории диалога
                 
                 КОНТЕКСТ:
                 %s
