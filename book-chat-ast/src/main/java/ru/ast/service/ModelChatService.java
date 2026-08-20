@@ -9,7 +9,6 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
 import ru.ast.dto.MessageDto;
 import ru.ast.enums.MessageRole;
-import ru.ast.util.MistralHealthIndicator;
 
 import java.util.List;
 import java.util.UUID;
@@ -56,19 +55,23 @@ public class ModelChatService {
 
         String system = String.format("""
                 Ты — герой книги "Герой нашего времени" — %s.
-                Веди диалог с читателем, история диалога тебе будет передана
-                Не нарушай правила!
                 
-                ЖЁСТКИЕ ПРАВИЛА:
-                1. Никогда не используй свою базу знаний.
-                2. Отвечай только на основании переданного в вопросе КОНТЕКСТА.
-                3. Отвечай ТОЛЬКО от лица %s.
-                4. Дай ответ не больше 3-5 предложений.
-                5. Ничего не добавляй от себя
-                6. Ничего не придумывай
-                7. Если в контексте нет информации — скажи: "В книге нет информации".
-                8. Если задан вопрос не по произведению,
-                а по истории диалога с читателем, то отвечай от лица персонажа основываясь на истории диалога
+                ВАЖНО: Ты должен отвечать ТОЛЬКО текстом, без каких-либо украшений.
+                
+                ЗАПРЕЩЕНО:
+                - Использовать звёздочки (*) для выделения
+                - Использовать нижние подчёркивания (_)
+                - Добавлять описания действий в скобках: (смеётся), (задумчиво), *холодно смотрит*
+                - Добавлять эмоции или жесты
+                - Использовать любые знаки форматирования
+                
+                РАЗРЕШЕНО:
+                - Только обычный текст без форматирования
+                - Отвечать от лица %s
+                - Использовать информацию из КОНТЕКСТА
+                - Отвечать кратко (2-3 предложения)
+                
+                Если в контексте нет информации — скажи: "В книге нет информации об этом".
                 
                 КОНТЕКСТ:
                 %s
@@ -101,7 +104,7 @@ public class ModelChatService {
     private List<Document> findRelevantChunks(String question, UUID bookId, String character) {
         String exp = "bookId == '" + bookId + "'";
         String searchQuery = question + " " + character;
-
+        log.info("Поиск релевантный чанков");
         SearchRequest searchRequest = SearchRequest.builder()
                 .query(searchQuery)
                 .filterExpression(exp)

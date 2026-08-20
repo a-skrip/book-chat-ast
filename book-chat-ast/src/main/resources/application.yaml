@@ -15,21 +15,16 @@ spring:
           temperature: 0.2
           max-tokens: 256
       embedding:
-        base-url: https://api.mistral.ai
-        api-key: ${MISTRAL_API_KEY}
+        base-url: http://localhost:8082
+        api-key: dummy-key
         options:
-          model: mistral-embed
+          model: Qwen3-Embedding-0.6B-f16
     vectorstore:
       pgvector:
         initialize-schema: true
         dimensions: 1024  # Размерность
         index-type: HNSW
         distance-type: COSINE_DISTANCE    # Для индексации: "search_document: "
-    retry:
-      max-attempts: 5
-      backoff:
-        initial-interval: 2000ms
-        multiplier: 2
 
   datasource:
     url: jdbc:postgresql://localhost:5433/books_db
