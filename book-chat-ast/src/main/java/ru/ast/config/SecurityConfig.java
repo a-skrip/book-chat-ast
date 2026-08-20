@@ -55,6 +55,7 @@ public class SecurityConfig {
                         .requestMatchers("/books/**").permitAll()
                         .requestMatchers("/characters/**").permitAll()
                         .requestMatchers("/api/sessions/**").permitAll()
+                        .requestMatchers("/conversations/**").permitAll()
                         // Swagger UI и OpenAPI
                         .requestMatchers("/swagger-ui/**","/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated()
