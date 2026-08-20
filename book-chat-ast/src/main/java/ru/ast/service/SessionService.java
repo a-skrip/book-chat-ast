@@ -6,15 +6,20 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.ast.dto.response.SessionResponse;
 import ru.ast.entity.Book;
 import ru.ast.entity.Reader;
 import ru.ast.entity.ReaderSession;
 import ru.ast.exceptions.BookNotFoundException;
+import ru.ast.exceptions.SessionNotFoundException;
+import ru.ast.mapper.CharacterMapper;
+import ru.ast.mapper.ChatMapper;
 import ru.ast.repository.BookRepository;
 import ru.ast.repository.ReaderRepository;
 import ru.ast.repository.ReaderSessionRepository;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -23,13 +28,12 @@ import java.util.UUID;
 public class SessionService {
 
     private final ReaderSessionRepository sessionRepository;
-
     private final ReaderRepository readerRepository;
     private final BookRepository bookRepository;
 
     private static final String SESSION_COOKIE_NAME = "reader_session_id";
-    private static final int COOKIE_MAX_AGE = 360; // в минутах
-//    private static final int COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // в минутах - 1 год
+    //    private static final int COOKIE_MAX_AGE = 360; // в минутах
+    private static final int COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // в минутах - 1 год
 
 
     public ReaderSession getReaderSession(UUID bookId,
@@ -85,10 +89,24 @@ public class SessionService {
         return session;
     }
 
-    private boolean sessionExist(UUID sessionId) {
+    public boolean sessionExist(UUID sessionId) {
         return sessionRepository.findById(sessionId).isPresent();
     }
 
+    public SessionResponse getSession(UUID sessionId) {
+        log.info("Получение сессии по ID: {}", sessionId);
+        ReaderSession readerSession = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new SessionNotFoundException(sessionId));
+        SessionResponse response = new SessionResponse();
+        response.setSessionId(readerSession.getId().toString());
+        response.setBookId(readerSession.getBook().getId().toString());
+        response.setReaderId(readerSession.getReader().getId().toString());
+        response.setBookTitle(readerSession.getBook().getTitle());
+        response.setCharacters(CharacterMapper.toDtoList(readerSession.getBook().getCharacters()));
+        response.setExistingChats(ChatMapper.toDtoList(readerSession.getChats()));
+
+        return response;
+    }
 
     private String getReaderSessionIdFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();

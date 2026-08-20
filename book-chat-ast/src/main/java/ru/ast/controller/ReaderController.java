@@ -22,6 +22,7 @@ public class ReaderController {
     public ResponseEntity<ReaderDto> createReader(@RequestParam String name) {
         ReaderDto readerDto = readerService.saveReader(name);
         return ResponseEntity.ok(readerDto);
-
     }
+
+
 }

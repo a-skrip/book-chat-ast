@@ -33,7 +33,7 @@ public class MessageService {
         boolean available = healthIndicator.isAvailable();
         if (available) {
             try {
-                log.info("");
+                log.info("Получение истории");
                 // 1. Получаем историю для модели (ДО сохранения вопроса)
                 List<MessageDto> chatHistoryForModel = getChatHistoryForModel(chat.getId());
                 // 2. Получаем ответ от модели
@@ -66,6 +66,11 @@ public class MessageService {
         return answer;
     }
 
+    public List<MessageDto> getChatHistory(UUID chatId) {
+        List<Message> all = messageRepository.findAllByChatIdOrderByCreatedAtAsc(chatId);
+        return MessagesMapper.toDtoList(all);
+    }
+
     private Message createMessage(Chat chat, MessageRole role, String text) {
         Message message = new Message();
         message.setChat(chat);
@@ -81,9 +86,4 @@ public class MessageService {
         List<Message> reversed = history.reversed();
         return MessagesMapper.toDtoList(reversed);
     }
-
-    public List<MessageDto> getChatHistory(UUID chatId) {
-        return MessagesMapper.toDtoList(messageRepository.findAllByChatIdOrderByCreatedAtAsc(chatId));
-    }
-
 }
