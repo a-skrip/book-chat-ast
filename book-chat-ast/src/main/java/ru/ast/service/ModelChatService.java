@@ -103,10 +103,10 @@ public class ModelChatService {
 
     private List<Document> findRelevantChunks(String question, UUID bookId, String character) {
         String exp = "bookId == '" + bookId + "'";
-        String searchQuery = question + " " + character;
+//        String searchQuery = question + " " + character;
         log.info("Поиск релевантный чанков");
         SearchRequest searchRequest = SearchRequest.builder()
-                .query(searchQuery)
+                .query(question)
                 .filterExpression(exp)
                 .topK(3)
                 .build();
