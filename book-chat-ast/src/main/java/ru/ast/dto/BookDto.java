@@ -1,4 +1,4 @@
-package ru.ast.dto.response;
+package ru.ast.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -6,19 +6,16 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class BookResponseDto {
-    private UUID id;
+public class BookDto {
+    private String id;
     private String title;
-    private String fullText;
+    private String slug;
     private String status;
     private String uploadPath;
-    private String qrQode;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }
