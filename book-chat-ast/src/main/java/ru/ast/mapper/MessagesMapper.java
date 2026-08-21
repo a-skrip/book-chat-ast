@@ -9,7 +9,7 @@ public class MessagesMapper {
 
     public static MessageDto toDto(Message entity) {
         MessageDto dto = new MessageDto();
-        dto.setId(dto.getId());
+        dto.setId(entity.getId().toString());
         dto.setRole(entity.getMessageRole().toString());
         dto.setText(entity.getText());
         dto.setCreatedAt(entity.getCreatedAt());

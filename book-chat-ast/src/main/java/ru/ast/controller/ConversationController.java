@@ -25,8 +25,17 @@ public class ConversationController {
 
     @Operation(summary = "Получение списка диалогов по книге")
     @GetMapping("/books/{bookId}/conversations")
-    public ResponseEntity<ConversationResponseDto> getConversations(@PathVariable UUID bookId) {
-        ConversationResponseDto response = sessionService.getAllConversations(bookId);
+    public ResponseEntity<ConversationResponseDto> getDialogsForBook(@PathVariable UUID bookId) {
+        ConversationResponseDto response = sessionService.getDialogsForBook(bookId);
+        return ResponseEntity.status(200).body(response);
+    }
+
+    @Operation(summary = "Получение диалога с персонажем по книге")
+    @GetMapping("books/{bookId}/characters/{characterId}/conversations")
+    public ResponseEntity<ConversationResponseDto> getDialogForBookWitCharacter(
+            @PathVariable UUID bookId,
+            @PathVariable UUID characterId) {
+        ConversationResponseDto response = sessionService.getDialogWitCharacter(bookId, characterId);
         return ResponseEntity.status(200).body(response);
     }
 }

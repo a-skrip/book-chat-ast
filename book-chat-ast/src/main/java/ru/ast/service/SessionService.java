@@ -98,7 +98,7 @@ public class SessionService {
         return response;
     }
 
-    public ConversationResponseDto getAllConversations(UUID bookId) {
+    public ConversationResponseDto getDialogsForBook(UUID bookId) {
         ConversationResponseDto response = new ConversationResponseDto();
 
         List<ReaderSession> sessions = sessionRepository.findAllChatsByBookId(bookId);
@@ -108,9 +108,24 @@ public class SessionService {
                 .toList();
 
         response.setItems(listChats);
-
+        log.info("Получение диалогов по книге: {}", bookId);
         long count = listChats.size();
         log.info("Найдено сессий: {},  для книги: {}", count, bookId);
+        return response;
+    }
+
+    public ConversationResponseDto getDialogWitCharacter(UUID bookId, UUID characterId) {
+        ConversationResponseDto response = new ConversationResponseDto();
+        List<ReaderSession> sessions = sessionRepository.findAllChatsByBookId(bookId);
+
+        log.info("Получение диалога с персонажем: {} книги {}", characterId, bookId);
+        List<ChatDto> result = sessions.stream()
+                .map(SessionMapper::toDto)
+                .flatMap(session -> session.getChats().stream())
+                .filter(el -> el.getCharacterId().equals(characterId.toString()))
+                .toList();
+
+        response.setItems(result);
         return response;
     }
 

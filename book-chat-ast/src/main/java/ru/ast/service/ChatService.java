@@ -96,7 +96,8 @@ public class ChatService {
         response.setCharacterName(character.getName());
         response.setModel("Mistral");
         response.setReply(message.getText());
-        response.setCanonChunks(messageService.getChatHistory(chat.getId()));
+        List<MessageDto> chatHistory = messageService.getChatHistory(chat.getId());
+        response.setCanonChunks(chatHistory);
         response.setCanonSufficient(true);
 
         log.info("✅ Чат {} с персонажем {} продолжен", chat.getId(), character.getName());
