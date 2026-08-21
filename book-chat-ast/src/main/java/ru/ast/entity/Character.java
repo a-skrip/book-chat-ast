@@ -21,6 +21,12 @@ public class Character {
     @Column(nullable = false, length = 30, name = "name")
     private String name;
 
+    @Column(name = "description",length = 100)
+    private String shortDescription;
+
+    @Column(name = "prompt_style")
+    private String promptStyle;
+
     @Column(name = "avatar_path")
     private String avatarPath;
 

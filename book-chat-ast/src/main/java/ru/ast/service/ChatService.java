@@ -30,7 +30,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ChatService {
 
-    private final ModelChatService modelService;
     private final BookRepository bookRepository;
     private final CharacterRepository characterRepository;
     private final ChatRepository chatRepository;

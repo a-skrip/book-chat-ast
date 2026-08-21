@@ -10,9 +10,9 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
+import ru.ast.dto.CharacterDto;
+import ru.ast.dto.response.CharactersResponseDto;
 import ru.ast.dto.request.CharacterRequestDto;
-import ru.ast.dto.CharacterResponseDto;
-import ru.ast.dto.CharactersResponseDto;
 import ru.ast.entity.Book;
 import ru.ast.entity.Character;
 import ru.ast.exceptions.BookNotFoundException;
@@ -52,8 +52,8 @@ public class CharacterService {
             return getAllCharactersForBook(bookId);
         }
         String extractCharacter = extractCharacter(bookId);
-        List<CharacterResponseDto> characterDtos = saveCharacterFromJson(bookId, extractCharacter);
-        response.setCharacters(characterDtos);
+        List<CharacterDto> characterDtos = saveCharacterFromJson(bookId, extractCharacter);
+        response.setItems(characterDtos);
         return response;
     }
 
@@ -66,22 +66,22 @@ public class CharacterService {
         responseDto.setBookId(bookId.toString());
 
         List<Character> characters = characterRepository.findAllByBookId(bookId);
-        List<CharacterResponseDto> dtos = characters.stream()
+        List<CharacterDto> dtos = characters.stream()
                 .map(CharacterMapper::toDto)
                 .toList();
-        responseDto.setCharacters(dtos);
+        responseDto.setItems(dtos);
 
         return responseDto;
     }
 
-    public CharacterResponseDto getCharacter(UUID characterId) {
+    public CharacterDto getCharacter(UUID characterId) {
         log.info("Получение персонажа по id: {}", characterId);
         Character character = characterRepository.findById(characterId)
                 .orElseThrow(() -> new CharacterNotFoundException(characterId));
         return CharacterMapper.toDto(character);
     }
 
-    public CharacterResponseDto updateCharacter(UUID characterId, CharacterRequestDto request) {
+    public CharacterDto updateCharacter(UUID characterId, CharacterRequestDto request) {
 
         Character entity = characterRepository.findById(characterId).orElseThrow(
                 () -> new CharacterNotFoundException(characterId));
@@ -96,13 +96,19 @@ public class CharacterService {
         if (request.getAvatarPath() != null) {
             entity.setAvatarPath(request.getAvatarPath());
         }
+        if (request.getPromptStyle() != null) {
+            entity.setPromptStyle(request.getPromptStyle());
+        }
+        if (request.getShortDescription() != null) {
+            entity.setShortDescription(request.getShortDescription());
+        }
 
         Character saved = characterRepository.save(entity);
 
         return CharacterMapper.toDto(saved);
     }
 
-    private List<CharacterResponseDto> saveCharacterFromJson(UUID bookId, String jsonCharacters) {
+    private List<CharacterDto> saveCharacterFromJson(UUID bookId, String jsonCharacters) {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(BookNotFoundException::new);
 
@@ -164,7 +170,7 @@ public class CharacterService {
                                     НЕ используй маркеры кода (```json, ```).
                                     Формат: {"characters": ["Имя1", "Имя2", "Имя3"]}
                                     Хорошие примеры: ["Печорин", "Максим Максимыч", "Бэла", "Азамат", "Казбич", "Вернер", "княжна Мери"].
-                                    Плохие примеры: ["женщины", "Кольцо", "Нерон", "Тасс", "Римские мужи", "княжна"].
+                                    Плохие примеры: ["женщины", "Кольцо", "Нерон", "Тасс", "Римские мужи", "княжна, Герой Нашего Времени, Лермонтов"].
                 """;
 
         String user = String.format("""

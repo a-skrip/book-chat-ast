@@ -1,27 +1,26 @@
 package ru.ast.mapper;
 
-import ru.ast.dto.CharacterResponseDto;
+import ru.ast.dto.CharacterDto;
 import ru.ast.entity.Character;
 
 import java.util.List;
 
 public class CharacterMapper {
 
-    public static List<CharacterResponseDto> toDtoList(List<Character> entities) {
+    public static List<CharacterDto> toDtoList(List<Character> entities) {
         return entities.stream()
-                .map(elem -> new CharacterResponseDto(elem.getId(),
-                        elem.getName(),
-                        elem.isEnabled(),
-                        elem.getAvatarPath()))
+                .map(CharacterMapper::toDto)
                 .toList();
     }
 
-    public static CharacterResponseDto toDto(Character character) {
-        return new CharacterResponseDto(
-                character.getId(),
-                character.getName(),
-                character.isEnabled(),
-                character.getAvatarPath()
+    public static CharacterDto toDto(Character entity) {
+        return new CharacterDto(
+                entity.getId().toString(),
+                entity.getBook().getId().toString(),
+                entity.getName(),
+                entity.getShortDescription() == null ? null : entity.getShortDescription(),
+                entity.getPromptStyle() == null ? null : entity.getPromptStyle(),
+                entity.isEnabled()
         );
     }
 }

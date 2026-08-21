@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Service;
-import ru.ast.dto.CharactersResponseDto;
+import ru.ast.dto.response.CharactersResponseDto;
 import ru.ast.entity.Book;
 import ru.ast.enums.BookStatus;
 import ru.ast.exceptions.BookNotFoundException;
@@ -101,7 +101,7 @@ public class BookProcessingService {
             CharactersResponseDto characters = characterService.extractCharacters(savedBook.getId());
             log.info("В книге id: {}, найдено: {} персонажей",
                     savedBook.getId(),
-                    characters.getCharacters().size());
+                    characters.getItems().size());
         }
     }
 

@@ -9,6 +9,6 @@ import java.time.LocalDate;
 public class MessageDto {
     private MessageRole role;
     private String message;
-    private CharacterResponseDto character;
+    private CharacterDto character;
     private LocalDate createdAt;
 }
