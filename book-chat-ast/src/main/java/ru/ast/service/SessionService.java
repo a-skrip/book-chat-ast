@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.ast.dto.ChatDto;
+import ru.ast.dto.response.ConversationResponseDto;
 import ru.ast.dto.response.SessionResponse;
 import ru.ast.entity.Book;
 import ru.ast.entity.Reader;
@@ -14,6 +16,7 @@ import ru.ast.exceptions.BookNotFoundException;
 import ru.ast.exceptions.SessionNotFoundException;
 import ru.ast.mapper.CharacterMapper;
 import ru.ast.mapper.ChatMapper;
+import ru.ast.mapper.SessionMapper;
 import ru.ast.repository.BookRepository;
 import ru.ast.repository.ReaderRepository;
 import ru.ast.repository.ReaderSessionRepository;
@@ -67,6 +70,50 @@ public class SessionService {
 
     }
 
+    public boolean sessionExist(UUID sessionId) {
+        return sessionRepository.findById(sessionId).isPresent();
+    }
+
+    public void logout(HttpServletResponse response) {
+        Cookie cookie = new Cookie(SESSION_COOKIE_NAME, null);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0); // Удаляем cookie
+        response.addCookie(cookie);
+        log.info("Сессия удалена");
+    }
+
+    public SessionResponse getSession(UUID sessionId) {
+        log.info("Получение сессии по ID: {}", sessionId);
+        ReaderSession readerSession = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new SessionNotFoundException(sessionId));
+        SessionResponse response = new SessionResponse();
+        response.setSessionId(readerSession.getId().toString());
+        response.setBookId(readerSession.getBook().getId().toString());
+        response.setReaderId(readerSession.getReader().getId().toString());
+        response.setBookTitle(readerSession.getBook().getTitle());
+        response.setCharacters(CharacterMapper.toDtoList(readerSession.getBook().getCharacters()));
+        response.setExistingChats(ChatMapper.toDtoList(readerSession.getChats()));
+
+        return response;
+    }
+
+    public ConversationResponseDto getAllConversations(UUID bookId) {
+        ConversationResponseDto response = new ConversationResponseDto();
+
+        List<ReaderSession> sessions = sessionRepository.findAllChatsByBookId(bookId);
+        List<ChatDto> listChats = sessions.stream()
+                .map(SessionMapper::toDto)
+                .flatMap(session -> session.getChats().stream())
+                .toList();
+
+        response.setItems(listChats);
+
+        long count = listChats.size();
+        log.info("Найдено сессий: {},  для книги: {}", count, bookId);
+        return response;
+    }
+
     private ReaderSession createReaderSession(UUID bookId) {
         ReaderSession readerSession = new ReaderSession();
         Book book = bookRepository.findById(bookId)
@@ -87,25 +134,6 @@ public class SessionService {
 
         log.info("Создана сессия: {}, для пользователя: {}", session.getId(), session.getReader().getId());
         return session;
-    }
-
-    public boolean sessionExist(UUID sessionId) {
-        return sessionRepository.findById(sessionId).isPresent();
-    }
-
-    public SessionResponse getSession(UUID sessionId) {
-        log.info("Получение сессии по ID: {}", sessionId);
-        ReaderSession readerSession = sessionRepository.findById(sessionId)
-                .orElseThrow(() -> new SessionNotFoundException(sessionId));
-        SessionResponse response = new SessionResponse();
-        response.setSessionId(readerSession.getId().toString());
-        response.setBookId(readerSession.getBook().getId().toString());
-        response.setReaderId(readerSession.getReader().getId().toString());
-        response.setBookTitle(readerSession.getBook().getTitle());
-        response.setCharacters(CharacterMapper.toDtoList(readerSession.getBook().getCharacters()));
-        response.setExistingChats(ChatMapper.toDtoList(readerSession.getChats()));
-
-        return response;
     }
 
     private String getReaderSessionIdFromCookie(HttpServletRequest request) {
@@ -129,15 +157,4 @@ public class SessionService {
         log.info("Установка COOKIE для sessionId: {}, life = {} ", sessionId, COOKIE_MAX_AGE);
         response.addCookie(cookie);
     }
-
-    public void logout(HttpServletResponse response) {
-        Cookie cookie = new Cookie(SESSION_COOKIE_NAME, null);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(0); // Удаляем cookie
-        response.addCookie(cookie);
-        log.info("Сессия удалена");
-    }
-
-
 }

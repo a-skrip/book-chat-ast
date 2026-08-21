@@ -13,7 +13,7 @@ import java.util.UUID;
 @RestController
 @AllArgsConstructor
 public class ExtractCharacterDescriptionController {
-
+//TODO перенести в CharacterController
     private final CharacterDescriptionModelService modelService;
 
     @GetMapping("/test")
