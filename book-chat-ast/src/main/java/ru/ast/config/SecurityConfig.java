@@ -52,8 +52,8 @@ public class SecurityConfig {
                         // Публичные эндпоинты
                         .requestMatchers("/admins/**").permitAll()
                         .requestMatchers("/chats/**").permitAll()
-                        .requestMatchers("/books/**").permitAll()
-                        .requestMatchers("/characters/**").permitAll()
+                        .requestMatchers("/api/books/**").permitAll()
+                        .requestMatchers("/api/characters/**").permitAll()
                         .requestMatchers("/api/sessions/**").permitAll()
                         .requestMatchers("/conversations/**").permitAll()
                         // Swagger UI и OpenAPI

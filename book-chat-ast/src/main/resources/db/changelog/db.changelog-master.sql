@@ -80,7 +80,15 @@ CREATE TABLE IF NOT EXISTS admins
 
 --changeset AlexeySkripnichenko:8
 ALTER TABLE books
-ADD COLUMN qr_code TEXT;
+ADD COLUMN IF NOT EXISTS qr_code TEXT;
 
+--changeset AlexeySkripnichenko:9
+ALTER TABLE characters
+ADD COLUMN IF NOT EXISTS description VARCHAR(100),
+ADD COLUMN IF NOT EXISTS promt_style VARCHAR(255);
+
+--changeset AlexeySkripnichenko:10
+ALTER TABLE chats
+ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT now();
 
 

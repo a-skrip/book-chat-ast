@@ -67,6 +67,7 @@ public class MessageService {
     }
 
     public List<MessageDto> getChatHistory(UUID chatId) {
+        log.info("Получение истории для chatId: {}", chatId);
         List<Message> all = messageRepository.findAllByChatIdOrderByCreatedAtAsc(chatId);
         return MessagesMapper.toDtoList(all);
     }

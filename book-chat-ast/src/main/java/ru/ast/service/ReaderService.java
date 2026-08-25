@@ -26,4 +26,14 @@ public class ReaderService {
         log.info("Создан name = {} c id = {}", name, saved.getId());
         return ReaderMapper.toDto(saved);
     }
+
+    public Reader createReader() {
+        Reader entity = new Reader();
+        Reader saved = readerRepository.save(entity);
+        log.info("Создание читателя");
+        saved.setName("reader_id_" + saved.getId());
+        Reader reader = readerRepository.saveAndFlush(saved);
+        log.info("Читателю id: {}, присвоено имя: {}", saved.getId(), saved.getName());
+        return reader;
+    }
 }

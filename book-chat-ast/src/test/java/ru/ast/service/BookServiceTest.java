@@ -6,7 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.ast.dto.response.BookResponseDto;
+import ru.ast.dto.BookDto;
 import ru.ast.entity.Book;
 import ru.ast.enums.BookStatus;
 import ru.ast.exceptions.BookNotFoundException;
@@ -32,7 +32,7 @@ class BookServiceTest {
 
     private UUID uuid;
     private Book book;
-    private BookResponseDto expectedDto;
+    private BookDto expectedDto;
 
     @BeforeEach
     void setUp() {
@@ -53,14 +53,14 @@ class BookServiceTest {
         //arrange
         when(repository.findById(uuid)).thenReturn(Optional.of(book));
         //act
-        BookResponseDto responseDto = service.getBook(uuid);
+        BookDto responseDto = service.getBook(uuid);
         //assert
         assertThat(responseDto)
                 .isNotNull()
                 .satisfies(dto -> {
                     assertThat(dto.getId()).isEqualTo(uuid);
                     assertThat(dto.getTitle()).isEqualTo(book.getTitle());
-                    assertThat(dto.getFullText()).isEqualTo(book.getFullText());
+                    assertThat(dto.getSlug()).isEqualTo(book.getFullText());
                     assertThat(dto.getUploadPath()).isEqualTo(book.getUploadPath());
                 });
         verify(repository).findById(uuid);

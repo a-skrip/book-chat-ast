@@ -15,10 +15,15 @@ spring:
           temperature: 0.2
           max-tokens: 256
       embedding:
-        base-url: http://localhost:8082
-        api-key: dummy-key
+        base-url: https://api.mistral.ai
+        api-key: ${MISTRAL_API_KEY}
         options:
-          model: Qwen3-Embedding-0.6B-f16
+          model: mistral-embed-2312
+#      embedding:
+#        base-url: http://localhost:8082
+#        api-key: dummy-key
+#        options:
+#          model: Qwen3-Embedding-0.6B-f16
     vectorstore:
       pgvector:
         initialize-schema: true

@@ -14,8 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import ru.ast.dto.BookDto;
 import ru.ast.dto.request.BookRequestDto;
-import ru.ast.dto.response.BookResponseDto;
+import ru.ast.dto.response.BooksResponseDto;
 import ru.ast.dto.response.ChunksResponseDto;
 import ru.ast.service.BookService;
 
@@ -23,26 +24,31 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/books" )
+@RequestMapping("api/books")
 @AllArgsConstructor
-@Tag(name = "Book", description = "API для управления книгами в системе" )
+@Tag(name = "Book", description = "API для управления книгами в системе")
 public class BookController {
 
     private final BookService bookService;
     private final String DATA_DIR = "src/main/resources/data/";
 
+    @Operation(summary = "Получить существующие книги")
+    @GetMapping
+    public ResponseEntity<BooksResponseDto> getAllBooks() {
+        BooksResponseDto response = bookService.getAll();
+        return ResponseEntity.ok(response);
+    }
 
     @Operation(
             summary = "Добавить новую книгу",
             description = "Сохраняет книгу из указанного локального пути и разбивает на фрагменты. Тяжелая операция "
     )
     @PostMapping
-    public ResponseEntity<BookResponseDto> addBook(@RequestBody BookRequestDto bookDto) {
-        BookResponseDto response = bookService.saveBook(bookDto);
+    public ResponseEntity<BookDto> addBook(@RequestBody BookRequestDto bookDto) {
+        BookDto response = bookService.saveBook(bookDto);
         return ResponseEntity.ofNullable(response);
     }
 
@@ -56,7 +62,7 @@ public class BookController {
                     description = "Книга успешно создана",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = BookResponseDto.class)
+                            schema = @Schema(implementation = BookDto.class)
                     )
             ),
             @ApiResponse(
@@ -70,12 +76,12 @@ public class BookController {
                     content = @Content
             )
     })
-    @PreAuthorize("hasAnyRole('ADMIN')" )
-    @SecurityRequirement(name = "basicAuth" )
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    @SecurityRequirement(name = "basicAuth")
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<BookResponseDto> uploadBook(
-            @RequestParam("file" ) MultipartFile file,
-            @RequestParam("title" ) String title) {
+    public ResponseEntity<BookDto> uploadBook(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("title") String title) {
 
         try {
             // Сохраняем файл на сервере
@@ -99,27 +105,23 @@ public class BookController {
         }
     }
 
-    @GetMapping("/{bookId}" )
-    public ResponseEntity<BookResponseDto> getBook(@PathVariable UUID bookId) {
-        BookResponseDto response = bookService.getBook(bookId);
+    @Operation(summary = "Получените книги по ID")
+    @GetMapping("/{bookId}")
+    public ResponseEntity<BookDto> getBook(@PathVariable UUID bookId) {
+        BookDto response = bookService.getBook(bookId);
         return ResponseEntity.ofNullable(response);
     }
 
-    @GetMapping
-    public ResponseEntity<List<BookResponseDto>> getAllBooks() {
-        List<BookResponseDto> response = bookService.getAll();
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/{bookId}/chunks" )
+    @GetMapping("/{bookId}/chunks")
     public ResponseEntity<ChunksResponseDto> getChunks(@PathVariable UUID bookId) {
         ChunksResponseDto allChunks = bookService.getAllChunks(bookId);
         return ResponseEntity.ok(allChunks);
     }
 
-
-    @PreAuthorize("hasAnyRole('ADMIN')" )
-    @DeleteMapping("/{bookId}" )
+    @Operation(summary = "Удаляет книгу по ID")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    @SecurityRequirement(name = "basicAuth")
+    @DeleteMapping("/{bookId}")
     public ResponseEntity<String> deleteBook(@PathVariable UUID bookId) {
         boolean deleted = bookService.deleteBook(bookId);
         if (deleted) {

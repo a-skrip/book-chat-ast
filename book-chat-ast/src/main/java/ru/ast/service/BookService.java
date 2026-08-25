@@ -5,8 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
 import org.springframework.stereotype.Service;
 import ru.ast.dto.request.BookRequestDto;
-import ru.ast.dto.response.BookResponseDto;
+import ru.ast.dto.BookDto;
 import ru.ast.dto.ChunkDto;
+import ru.ast.dto.response.BooksResponseDto;
 import ru.ast.dto.response.ChunksResponseDto;
 import ru.ast.entity.Book;
 import ru.ast.enums.BookStatus;
@@ -32,7 +33,7 @@ public class BookService {
     private final VectorStoreRepository vectorStore;
     private final TextExtractor textExtractor;
 
-    public BookResponseDto getBook(UUID bookId) {
+    public BookDto getBook(UUID bookId) {
         log.info("Получение книги по id: {}", bookId);
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(
@@ -43,16 +44,21 @@ public class BookService {
         return BookMapper.toDto(book);
     }
 
-    public List<BookResponseDto> getAll() {
+    public BooksResponseDto getAll() {
         log.info("Получение всех произведений ");
         List<Book> bookList = bookRepository.findAll();
-        return bookList.stream()
+        BooksResponseDto response = new BooksResponseDto();
+
+        List<BookDto> list = bookList.stream()
                 .filter(el -> !el.getStatus().equals(BookStatus.DELETED))
                 .map(BookMapper::toDto)
                 .toList();
+        response.setItems(list);
+        return  response;
+
     }
 
-    public BookResponseDto saveBook(BookRequestDto bookRequestDto) {
+    public BookDto saveBook(BookRequestDto bookRequestDto) {
         Book entity = new Book();
         String fullText;
         String uploadedPath = bookRequestDto.path();
@@ -95,6 +101,7 @@ public class BookService {
                     .orElseThrow(() -> new BookNotFoundException(bookId));
             book.setStatus(BookStatus.DELETED);
             bookRepository.save(book);
+            log.info("Удаление книги id: {}", bookId);
             return true;
         }
         return false;

@@ -1,19 +1,17 @@
 package ru.ast.mapper;
 
-import ru.ast.dto.response.BookResponseDto;
+import ru.ast.dto.BookDto;
 import ru.ast.entity.Book;
 
 public class BookMapper {
-    public static BookResponseDto toDto(Book entity) {
-        BookResponseDto dto = new BookResponseDto();
-        dto.setId(entity.getId());
+    public static BookDto toDto(Book entity) {
+        BookDto dto = new BookDto();
+        dto.setId(entity.getId().toString());
         dto.setTitle(entity.getTitle());
-        dto.setFullText((entity.getFullText()));
+        dto.setSlug(entity.getFullText());
         dto.setStatus(entity.getStatus().toString());
         dto.setUploadPath(entity.getUploadPath());
-        dto.setQrQode(entity.getQrCode());
         dto.setCreatedAt(entity.getCreatedAt());
-        dto.setUpdatedAt(entity.getUpdatedAt());
         return dto;
     }
 

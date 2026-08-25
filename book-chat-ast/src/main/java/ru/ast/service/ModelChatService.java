@@ -45,8 +45,8 @@ public class ModelChatService {
         } else {
             historyText = history.stream()
                     .map(elem -> {
-                        String role = elem.getRole() == MessageRole.USER ? "Читатель" : character;
-                        String message = elem.getMessage();
+                        String role = elem.getRole().equals(MessageRole.USER.toString()) ? "Читатель" : character;
+                        String message = elem.getText();
                         return role + ": " + message;
                     })
                     .collect(Collectors.joining("\n"));
