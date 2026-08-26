@@ -135,10 +135,16 @@ public class ChatService {
     }
 
     public ChatResponseDto createNewChat(String bookId, String characterId) {
+
         Book book = bookRepository.findById(UUID.fromString(bookId))
                 .orElseThrow(() -> new BookNotFoundException(UUID.fromString(bookId)));
         Character character = characterRepository.findById(UUID.fromString(characterId))
                 .orElseThrow(() -> new CharacterNotFoundException(UUID.fromString(characterId)));
+
+        if (!character.getBook().getId().equals(book.getId())) {
+            throw new CharacterNotBelongThisBookException("Персонаж не принадлежит этой книге");
+        }
+
         ChatResponseDto response = new ChatResponseDto();
         Reader reader = readerService.createReader();
 
