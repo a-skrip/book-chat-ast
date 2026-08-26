@@ -2,7 +2,7 @@ package ru.ast.dto.request;
 
 import jakarta.validation.constraints.*;
 
-public record RegisterAdminRequest(
+public record AdminRegistrationRequest(
         @NotBlank(message = "Имя пользователя обязательно")
         String name,
         String surname,

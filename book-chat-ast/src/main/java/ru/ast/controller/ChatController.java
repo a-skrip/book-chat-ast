@@ -22,7 +22,7 @@ public class ChatController {
     private final ChatService chatService;
     private final MessageService messageService;
 
-    @Operation(summary = "Отправляет сообщение модели для получения ответа")
+    @Operation(summary = "Отправляет сообщение моделе для получения ответа")
     @PostMapping("/chat/respond")
     public ResponseEntity<ChatResponseDto> startDialog(@RequestBody ChatRequestNewDto request) {
         ChatResponseDto response = chatService.startOrContinueChat(request);
@@ -37,25 +37,4 @@ public class ChatController {
         ChatResponseDto response = chatService.createNewChat(bookId, characterId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-
-//    @PostMapping()
-//    public ChatWithMessageResponseDto startChat(@RequestBody ChatRequestDto chatRequestDto) {
-//        return chatService.startChat(chatRequestDto);
-//    }
-//
-//    @GetMapping("chats/{sessionId}")
-//    public ResponseEntity<ReaderSessionResponseDto> getLastChats(@PathVariable UUID sessionId) {
-//        ReaderSessionResponseDto session = chatService.getSessionInfo(sessionId);
-//        return ResponseEntity.ok(session);
-//    }
-//
-//    @GetMapping("/books/{bookId}")
-//    public ResponseEntity<SessionResponse> enterBookSession(
-//            @PathVariable UUID bookId,
-//            HttpServletRequest request,
-//            HttpServletResponse response
-//    ) {
-//        SessionResponse result = chatService.startSession(bookId, request, response);
-//        return ResponseEntity.ok(result);
-//    }
 }

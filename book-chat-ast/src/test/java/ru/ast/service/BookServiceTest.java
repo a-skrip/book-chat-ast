@@ -58,7 +58,7 @@ class BookServiceTest {
         assertThat(responseDto)
                 .isNotNull()
                 .satisfies(dto -> {
-                    assertThat(dto.getId()).isEqualTo(uuid);
+                    assertThat(dto.getId()).isEqualTo(String.valueOf(uuid));
                     assertThat(dto.getTitle()).isEqualTo(book.getTitle());
                     assertThat(dto.getSlug()).isEqualTo(book.getFullText());
                     assertThat(dto.getUploadPath()).isEqualTo(book.getUploadPath());

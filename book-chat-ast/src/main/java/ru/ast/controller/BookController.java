@@ -30,6 +30,7 @@ import java.util.UUID;
 @RequestMapping("api/books")
 @AllArgsConstructor
 @Tag(name = "Book", description = "API для управления книгами в системе")
+@SecurityRequirement(name = "bearerAuth")
 public class BookController {
 
     private final BookService bookService;
@@ -46,6 +47,7 @@ public class BookController {
             summary = "Добавить новую книгу",
             description = "Сохраняет книгу из указанного локального пути и разбивает на фрагменты. Тяжелая операция "
     )
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @PostMapping
     public ResponseEntity<BookDto> addBook(@RequestBody BookRequestDto bookDto) {
         BookDto response = bookService.saveBook(bookDto);
@@ -54,7 +56,10 @@ public class BookController {
 
     @Operation(
             summary = "Добавить новую книгу",
-            description = "Сохраняет книгу из выбранного файла и разбивает на фрагменты. Тяжелая операция "
+            description = """
+                    Только для админов (нужен JWT).
+                    Сохраняет книгу из выбранного файла. Тяжелая операция
+                    """
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -77,7 +82,6 @@ public class BookController {
             )
     })
     @PreAuthorize("hasAnyRole('ADMIN')")
-    @SecurityRequirement(name = "basicAuth")
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BookDto> uploadBook(
             @RequestParam("file") MultipartFile file,
@@ -118,9 +122,9 @@ public class BookController {
         return ResponseEntity.ok(allChunks);
     }
 
-    @Operation(summary = "Удаляет книгу по ID")
+    @Operation(summary = "Удаляет книгу по ID",
+            description = "Только для админов (нужен JWT)")
     @PreAuthorize("hasAnyRole('ADMIN')")
-    @SecurityRequirement(name = "basicAuth")
     @DeleteMapping("/{bookId}")
     public ResponseEntity<String> deleteBook(@PathVariable UUID bookId) {
         boolean deleted = bookService.deleteBook(bookId);

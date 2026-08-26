@@ -1,6 +1,7 @@
 package ru.ast.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @RequestMapping("/api")
 @Tag(name = "Character", description = "Api для управления персонажами")
+@SecurityRequirement(name = "bearerAuth")
 public class CharacterController {
 
     private final CharacterService characterService;
@@ -28,23 +30,25 @@ public class CharacterController {
     }
 
     @Operation(summary = "Получить персонажа по ID")
-    @GetMapping("/characters/{id}" )
+    @GetMapping("/characters/{id}")
     public ResponseEntity<CharacterDto> getCharacter(@PathVariable UUID id) {
         return ResponseEntity.ok(characterService.getCharacter(id));
     }
 
     @Operation(
-         summary = "Извлекает персонажей из книги",
-         description = "Извлекает персонажей из произведения и сохраняет в БД используя LLM-модель"
+            summary = "Извлекает персонажей из книги",
+            description = "Извлекает персонажей из произведения и сохраняет в БД используя LLM-модель"
     )
-    @PreAuthorize("hasAnyRole('ADMIN')" )
-    @PostMapping("/books/{bookId}/characters/extract" )
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PostMapping("/books/{bookId}/characters/extract")
     public ResponseEntity<CharactersResponseDto> extractCharacters(@PathVariable UUID bookId) {
         return ResponseEntity.ok(characterService.extractCharacters(bookId));
     }
 
-    @Operation(summary = "Изменение персонажа")
-    @PatchMapping("/characters/{characterId}" )
+    @Operation(summary = "Изменение персонажа",
+            description = "Только для админов (нужен JWT)")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PatchMapping("/characters/{characterId}")
     public ResponseEntity<CharacterDto> updateCharacter(
             @PathVariable UUID characterId,
             @RequestBody CharacterRequestDto request) {
