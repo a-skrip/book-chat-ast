@@ -24,12 +24,11 @@ public class CustomUserDetailsService implements UserDetailsService {
         Admin admin = adminRepository.findByEmail(name)
                 .orElseThrow(() -> new AdminNotFoundException("Admin not found: " + name));
 
+        //Добавляем ROLE_ для Spring Security
         return new org.springframework.security.core.userdetails.User(
                 admin.getEmail(),
                 admin.getPasswordHash(),
-                List.of(new SimpleGrantedAuthority(admin.getRole().name())));
-
+                List.of(new SimpleGrantedAuthority("ROLE_" + admin.getRole().name()))
+        );
     }
-
-
 }

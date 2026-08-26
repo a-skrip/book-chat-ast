@@ -14,6 +14,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import ru.ast.security.JwtAuthenticationFilter;
 import ru.ast.service.CustomUserDetailsService;
 
 @Configuration
@@ -23,7 +25,7 @@ import ru.ast.service.CustomUserDetailsService;
 public class SecurityConfig {
 
     private final CustomUserDetailsService customUserDetailsService;
-
+    private final JwtAuthenticationFilter jwtAuthFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -50,21 +52,24 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         // Публичные эндпоинты
-                        .requestMatchers("/admins/**").permitAll()
-                        .requestMatchers("/chats/**").permitAll()
+                        .requestMatchers("/api/auth/login", "api/auth/register").permitAll()
+                        .requestMatchers("/api/chat/qr").permitAll()
+                        .requestMatchers("/api/chat/respond").permitAll()
                         .requestMatchers("/api/books/**").permitAll()
                         .requestMatchers("/api/characters/**").permitAll()
                         .requestMatchers("/api/sessions/**").permitAll()
-                        .requestMatchers("/conversations/**").permitAll()
+                        .requestMatchers("/api/books/*/conversations").permitAll()
                         // Swagger UI и OpenAPI
                         .requestMatchers("/swagger-ui/**","/v3/api-docs/**").permitAll()
+                        .requestMatchers("/api/auth").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .passwordManagement(Customizer.withDefaults())
                 .sessionManagement(
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .httpBasic(Customizer.withDefaults())
-                .authenticationProvider(authenticationProvider());
+//                .httpBasic(Customizer.withDefaults())
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

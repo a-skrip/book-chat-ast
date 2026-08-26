@@ -7,6 +7,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import ru.ast.enums.Role;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -36,6 +37,9 @@ public class Admin implements UserDetails {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
     @PrePersist
     void prePersist() {
         if (id == null) {
@@ -45,7 +49,8 @@ public class Admin implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role.name()));
+        // ✅ Добавляем ROLE_ для Spring Security
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     @Override

@@ -13,7 +13,7 @@ import ru.ast.service.QRCodeService;
 
 @Slf4j
 @RestController
-@RequestMapping("/qr")
+@RequestMapping("/api/chat")
 @RequiredArgsConstructor
 @Tag(name = "QR-коды", description = "Генерация QR-кодов")
 public class QRController {
@@ -22,7 +22,7 @@ public class QRController {
 
     @Operation(summary = "Сгенерировать QR-код для чата",
             description = "Возвращает QR-код со ссылкой на чат")
-    @PostMapping(value = "/chat", produces = MediaType.IMAGE_PNG_VALUE)
+    @PostMapping(value = "/qr", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> generateChatQR(@RequestBody RequestQRGenerate request) {
 
 

@@ -8,10 +8,7 @@ import ru.ast.dto.request.ChatRequestNewDto;
 import ru.ast.dto.response.ChatResponseDto;
 import ru.ast.entity.*;
 import ru.ast.entity.Character;
-import ru.ast.exceptions.BookNotFoundException;
-import ru.ast.exceptions.CharacterNotFoundException;
-import ru.ast.exceptions.ChatNotFoundException;
-import ru.ast.exceptions.SessionNotFoundException;
+import ru.ast.exceptions.*;
 import ru.ast.repository.*;
 
 import java.util.ArrayList;
@@ -52,7 +49,7 @@ public class ChatService {
                 .orElseThrow(() -> new CharacterNotFoundException(UUID.fromString(request.getCharacterId())));
 
         if (!character.getBook().getId().equals(book.getId())) {
-            throw new RuntimeException("Персонаж не принадлежит этой книге");
+            throw new CharacterNotBelongThisBookException("Персонаж не принадлежит этой книге");
         }
 
         if (request.getSessionId() != null) {

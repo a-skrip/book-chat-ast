@@ -91,4 +91,6 @@ ADD COLUMN IF NOT EXISTS promt_style VARCHAR(255);
 ALTER TABLE chats
 ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT now();
 
-
+--changeset AlexeySkripnichenko:11
+ALTER TABLE admins
+ADD COLUMN IF NOT EXISTS created_at TIMESTAMP default now();
