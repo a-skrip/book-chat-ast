@@ -43,6 +43,12 @@ public class BookController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Разбивает книгу на чанки и записывает в векторное хранилище")
+    @PostMapping("/{bookId}/chunks")
+    public ResponseEntity<ChunksResponseDto> splitToChinks(@PathVariable UUID bookId) {
+        return ResponseEntity.ok().body(bookService.splitTextIntoChunks(bookId));
+    }
+
     @Operation(
             summary = "Добавить новую книгу",
             description = "Сохраняет книгу из указанного локального пути и разбивает на фрагменты. Тяжелая операция "
