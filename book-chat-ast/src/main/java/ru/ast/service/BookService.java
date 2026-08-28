@@ -107,6 +107,22 @@ public class BookService {
         return false;
     }
 
+    public ChunksResponseDto splitTextIntoChunks(UUID bookId) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BookNotFoundException(bookId));
+
+        ChunksResponseDto response = new ChunksResponseDto();
+        if (!book.getStatus().equals(BookStatus.UPLOADED)) {
+            log.warn("ПРОВЕРИТЬ СТАТУС КНИГИ!!!");
+        }
+        bookProcessingService.processBook(book.getId());
+        List<ChunkDto> allChunks = vectorStore.getAllChunks(book.getId());
+        response.setBookId(book.getId().toString());
+        response.setChunkCount(allChunks.size());
+        response.setAllChunks(allChunks);
+        return response;
+    }
+
     public ChunksResponseDto getAllChunks(UUID bookId) {
         ChunksResponseDto responseDto = new ChunksResponseDto();
         List<ChunkDto> allChunks = vectorStore.getAllChunks(bookId);
