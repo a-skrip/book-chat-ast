@@ -60,7 +60,7 @@ public class MessageService {
                 throw new RuntimeException("Не удалось получить ответ от модели", e);
             }
         } else {
-            answer.setText("Снова проблемы с ембеддингами");
+            answer.setText("Подожди немного, мне надо подумать...");
         }
 
         return answer;
