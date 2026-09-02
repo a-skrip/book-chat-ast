@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.ast.dto.MessageDto;
+import ru.ast.entity.Book;
+import ru.ast.entity.Character;
 import ru.ast.entity.Chat;
 import ru.ast.entity.Message;
 import ru.ast.enums.MessageRole;
@@ -28,7 +30,7 @@ public class MessageService {
     private final MistralHealthIndicator healthIndicator;
 
     @Transactional
-    protected Message sendQuestionAndSaveAnswer(Chat chat, String message, UUID bookId, String characterName) {
+    protected Message sendQuestionAndSaveAnswer(Chat chat, String message, Book book, Character character) {
         Message answer = new Message();
         boolean available = healthIndicator.isAvailable();
         if (available) {
@@ -39,8 +41,8 @@ public class MessageService {
                 // 2. Получаем ответ от модели
                 String answerFromModel = modelService.getAnswerFromModel(
                         message,
-                        bookId,
-                        characterName,
+                        book,
+                        character,
                         chatHistoryForModel
                 );
                 // 3. ТОЛЬКО ПОСЛЕ успешного получения ответа — сохраняем оба сообщения
