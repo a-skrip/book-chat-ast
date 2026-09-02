@@ -12,7 +12,7 @@ services:
       - ./data/postgres:/var/lib/postgresql/data
     restart: unless-stopped
     healthcheck: # <-- ДОБАВЬТЕ ЭТОТ БЛОК
-      test: [ "CMD-SHELL", "pg_isready -U postgres -d books_db" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d books_db" ]
       interval: 10s
       timeout: 5s
       retries: 5

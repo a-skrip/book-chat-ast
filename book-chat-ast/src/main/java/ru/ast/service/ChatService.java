@@ -23,12 +23,8 @@ public class ChatService {
     private final BookRepository bookRepository;
     private final CharacterRepository characterRepository;
     private final ChatRepository chatRepository;
-    private final MessageRepository messageRepository;
     private final ReaderSessionRepository sessionRepository;
-    private final ReaderRepository readerRepository;
-    private final SessionService sessionService;
     private final MessageService messageService;
-    private final CharacterService characterService;
     private final ReaderService readerService;
 
 
@@ -59,7 +55,7 @@ public class ChatService {
 
             chat = findOrCreateChat(session, character);
 
-            answer = sendMessage(chat, request.getMessage(), book.getId(), character.getName());
+            answer = sendMessage(chat, request.getMessage(), book, character);
 
             List<MessageDto> chatHistory = messageService.getChatHistory(chat.getId());
 
@@ -86,7 +82,7 @@ public class ChatService {
                 log.warn("Диалог принадлежит: {}, но передан {}", character.getName(), chat.getCharacter().getName());
                 throw new IllegalArgumentException("Диалог ведется с другим персонажем");
             }
-            answer = sendMessage(chat, request.getMessage(), book.getId(), character.getName());
+            answer = sendMessage(chat, request.getMessage(), book, character);
             List<MessageDto> chatHistory = messageService.getChatHistory(chat.getId());
 
             response.setConversationId(String.valueOf(chat.getId()));
@@ -117,7 +113,7 @@ public class ChatService {
             log.info("Создан чат: {}, по книге: {}, персонаж: {}, читатель: {}",
                     chat.getId(), book.getTitle(), character.getName(), reader.getName());
 
-            answer = sendMessage(chat, request.getMessage(), book.getId(), character.getName());
+            answer = sendMessage(chat, request.getMessage(), book, character);
 
             List<MessageDto> chatHistory = messageService.getChatHistory(chat.getId());
 
@@ -191,96 +187,8 @@ public class ChatService {
                 });
     }
 
-    private String sendMessage(Chat chat, String message, UUID bookId, String characterName) {
-        Message result = messageService.sendQuestionAndSaveAnswer(chat, message, bookId, characterName);
+    private String sendMessage(Chat chat, String message, Book book, Character character) {
+        Message result = messageService.sendQuestionAndSaveAnswer(chat, message,book, character);
         return result.getText();
     }
-
-//    public SessionResponse startSession(UUID bookId,
-//                                        HttpServletRequest req,
-//                                        HttpServletResponse resp) {
-//
-//        SessionResponse response = new SessionResponse();
-//
-//        ReaderSession readerSession = sessionService.getReaderSession(bookId, req, resp);
-//
-//        List<Character> characters = characterRepository.findAllByBookId(bookId);
-//        List<Chat> chatsBySessionId = chatRepository.findChatsBySessionId(readerSession.getId());
-//        Book book = bookRepository.findById(bookId)
-//                .orElseThrow(BookNotFoundException::new);
-//
-//        response.setSessionId(readerSession.getId().toString());
-//        response.setBookId(bookId.toString());
-//        response.setReaderId(readerSession.getReader().getId().toString());
-//        response.setBookTitle(book.getTitle());
-//        response.setCharacters(CharacterMapper.toDtoList(characters));
-//        response.setExistingChats(ChatMapper.toDtoList(chatsBySessionId));
-//
-//        return response;
-//    }
-//
-//
-//    public ChatWithMessageResponseDto startChat(ChatRequestDto request) {
-//        // 1. Проверяем все сущности
-//        Book book = bookRepository.findById(request.bookId())
-//                .orElseThrow(() -> new BookNotFoundException(request.bookId()));
-//
-//        Reader reader = readerRepository.findById(request.readerId())
-//                .orElseThrow(() -> new ReaderNotFoundException(request.readerId()));
-//
-//        Character character = characterRepository.findById(request.characterId())
-//                .orElseThrow(() -> new CharacterNotFoundException(request.characterId()));
-//
-//        ReaderSession session = sessionRepository.findById(request.sessionId())
-//                .orElseThrow(() -> new SessionNotFoundException(request.sessionId()));
-//
-//        // 2. Проверяем, что персонаж принадлежит книге
-//        if (!character.getBook().getId().equals(request.bookId())) {
-//            throw new RuntimeException("Персонаж не принадлежит этой книге");
-//        }
-//        // 3. Ищем или создаём чат с этим персонажем
-//        Chat chat = findOrCreateChat(session, character);
-//
-//        Message message = messageService.sendQuestionAndSaveAnswer(chat,
-//                request.message(),
-//                request.bookId(),
-//                character.getName());
-//
-//        ChatWithMessageResponseDto response = new ChatWithMessageResponseDto();
-//        response.setBookId(book.getId().toString());
-//        response.setTitle(book.getTitle());
-//        response.setCharacterName(character.getName());
-//        response.setModel("Mistral");
-//        response.setReply(message.getText());
-//        List<MessageDto> chatHistory = messageService.getChatHistory(chat.getId());
-//        response.setCanonChunks(chatHistory);
-//        response.setCanonSufficient(true);
-//
-//        log.info("✅ Чат {} с персонажем {} продолжен", chat.getId(), character.getName());
-//        return response;
-//    }
-//
-//
-//    public ReaderSessionResponseDto getSessionInfo(UUID sessionId) {
-//        ReaderSession session = sessionRepository.findById(sessionId)
-//                .orElseThrow(() -> new SessionNotFoundException(sessionId));
-//
-//        ReaderSessionResponseDto response = new ReaderSessionResponseDto();
-//        response.setSessionId(session.getId());
-//
-//        List<Chat> chats = session.getChats();
-//        log.info("Формирование списка чатов для session: {}", sessionId);
-//
-//        List<MessageDto> messageDtoList = new ArrayList<>();
-//        for (Chat chat : chats) {
-//            Message message = messageRepository.findFirstMessageFromReader(chat.getId());
-//            MessageDto dto = MessagesMapper.toDto(message);
-//
-//            messageDtoList.add(dto);
-//        }
-//        response.setChats(messageDtoList);
-//        return response;
-//    }
-
-
 }

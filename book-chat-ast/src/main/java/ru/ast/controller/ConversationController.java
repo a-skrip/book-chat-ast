@@ -38,4 +38,13 @@ public class ConversationController {
         ConversationResponseDto response = sessionService.getDialogWitCharacter(bookId, characterId);
         return ResponseEntity.status(200).body(response);
     }
+
+    @Operation(summary = "Получение диалога по ID")
+    @GetMapping("/conversations/{conversationId}")
+    public ResponseEntity<ConversationResponseDto> getConversationById(@PathVariable UUID conversationId) {
+        ConversationResponseDto response = sessionService.getDialogById(conversationId);
+        return ResponseEntity.ok(response);
+    }
+
+
 }

@@ -59,6 +59,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/characters/**").permitAll()
                         .requestMatchers("/api/sessions/**").permitAll()
                         .requestMatchers("/api/books/*/conversations").permitAll()
+                        .requestMatchers("/api/conversations/**").permitAll()
                         // Swagger UI и OpenAPI
                         .requestMatchers("/swagger-ui/**","/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/auth").hasRole("ADMIN")

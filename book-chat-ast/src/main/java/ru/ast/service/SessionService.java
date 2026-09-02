@@ -10,14 +10,17 @@ import ru.ast.dto.ChatDto;
 import ru.ast.dto.response.ConversationResponseDto;
 import ru.ast.dto.response.SessionResponse;
 import ru.ast.entity.Book;
+import ru.ast.entity.Chat;
 import ru.ast.entity.Reader;
 import ru.ast.entity.ReaderSession;
 import ru.ast.exceptions.BookNotFoundException;
+import ru.ast.exceptions.ChatNotFoundException;
 import ru.ast.exceptions.SessionNotFoundException;
 import ru.ast.mapper.CharacterMapper;
 import ru.ast.mapper.ChatMapper;
 import ru.ast.mapper.SessionMapper;
 import ru.ast.repository.BookRepository;
+import ru.ast.repository.ChatRepository;
 import ru.ast.repository.ReaderRepository;
 import ru.ast.repository.ReaderSessionRepository;
 
@@ -33,6 +36,7 @@ public class SessionService {
     private final ReaderSessionRepository sessionRepository;
     private final ReaderRepository readerRepository;
     private final BookRepository bookRepository;
+    private final ChatRepository chatRepository;
 
     private static final String SESSION_COOKIE_NAME = "reader_session_id";
     //    private static final int COOKIE_MAX_AGE = 360; // в минутах
@@ -126,6 +130,17 @@ public class SessionService {
                 .toList();
 
         response.setItems(result);
+        return response;
+    }
+
+    public ConversationResponseDto getDialogById(UUID chatId) {
+        ConversationResponseDto response = new ConversationResponseDto();
+        Chat chat = chatRepository.findById(chatId)
+                .orElseThrow(() -> new ChatNotFoundException(chatId));
+
+        log.info("💬 Получение диалога по ID: {}", chatId);
+        ChatDto dto = ChatMapper.toDto(chat);
+        response.setItems(List.of(dto));
         return response;
     }
 
