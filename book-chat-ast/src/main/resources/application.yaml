@@ -20,10 +20,10 @@ spring:
 #        options:
 #          model: mistral-embed
       embedding:
-        base-url: http://localhost:8082
-        api-key: dummy-key
+        base-url: ${SPRING_AI_MISTRALAI_EMBEDDING_BASE_URL}
+        api-key: ${SPRING_AI_MISTRALAI_EMBEDDING_API_KEY}
         options:
-          model: Qwen3-Embedding-0.6B-f16
+          model: ${SPRING_AI_MISTRALAI_EMBEDDING_OPTIONS_MODEL}
     vectorstore:
       pgvector:
         initialize-schema: true
