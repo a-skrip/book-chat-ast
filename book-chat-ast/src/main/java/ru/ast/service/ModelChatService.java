@@ -306,7 +306,7 @@ public class ModelChatService {
         FREE_DIALOG,
         BOOK_RAG,
         BOOK_FALLBACK,
-        QUESTION_AT_ANSWER;
+        QUESTION_AT_ANSWER
     }
 
     private DialogMode determineDialogMode(String question, List<Document> chunks, List<MessageDto> history) {
