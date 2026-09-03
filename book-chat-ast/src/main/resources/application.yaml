@@ -14,16 +14,9 @@ spring:
           model: mistral-medium-latest
           temperature: 0.2
           max-tokens: 256
-#      embedding:
-#        base-url: https://api.mistral.ai
-#        api-key: ${MISTRAL_API_KEY}
-#        options:
-#          model: mistral-embed
       embedding:
-        base-url: ${SPRING_AI_MISTRALAI_EMBEDDING_BASE_URL}
-        api-key: ${SPRING_AI_MISTRALAI_EMBEDDING_API_KEY}
-        options:
-          model: ${SPRING_AI_MISTRALAI_EMBEDDING_OPTIONS_MODEL}
+        base-url: http://localhost:8082
+        api-key: dummy-key
     vectorstore:
       pgvector:
         initialize-schema: true
