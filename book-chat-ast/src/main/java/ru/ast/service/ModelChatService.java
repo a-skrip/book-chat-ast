@@ -16,6 +16,7 @@ import ru.ast.dto.MessageDto;
 import ru.ast.entity.Book;
 import ru.ast.entity.Character;
 import ru.ast.enums.MessageRole;
+import ru.ast.repository.CharacterRepository;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,33 +30,38 @@ public class ModelChatService {
     private final OpenAIClient chatClient;
     private final String modelName;
     private final VectorStore vectorStore;
+    private final CharacterRepository characterRepository;
 
     public ModelChatService(
             @Qualifier("yandexOpenAIClient") OpenAIClient chatClient,
             @Qualifier("yandexModelName") String modelName,
-            VectorStore vectorStore
+            VectorStore vectorStore,
+            CharacterRepository characterRepository
 
     ) {
         this.chatClient = chatClient;
         this.modelName = modelName;
         this.vectorStore = vectorStore;
+        this.characterRepository = characterRepository;
     }
 
     private static final String[] BOOK_KEYWORDS = {
-            "Бэла","Бэлу","Бэле","Бэлой", "Бэлою",
-            "Печорин","Печорине","Печорина","Печорину","Печориным",
-            "Максим Максимыч","Максим Максимыча","Максим Максимыче","Максим Максимычу","Максим Максимычем",
-            "Казбич","Казбича","Казбичу","Казбиче","Казбичем",
-            "Азамат","Азамату","Азаматом","Азамате","Азамата",
+            "Бэла", "Бэлу", "Бэле", "Бэлой", "Бэлою",
+            "Печорин", "Печорине", "Печорина", "Печорину", "Печориным",
+            "Максим Максимыч", "Максим Максимыча", "Максим Максимыче", "Максим Максимычу", "Максим Максимычем",
+            "Казбич", "Казбича", "Казбичу", "Казбиче", "Казбичем",
+            "Азамат", "Азамату", "Азаматом", "Азамате", "Азамата",
             "Григорий Александрович",
-            "княжна", "княжне","княжной","княжну",
-            "Грушницкий","Грушницкому","Грушницком",
-            "Вернер","Вернеру","Вернере","Вернером",
-            "Вера", "Верой","Вере","Веру",
-            "Кавказ","Кавказе","Кавказу",
+            "княжна", "княжне", "княжной", "княжну",
+            "Грушницкий", "Грушницкому", "Грушницком",
+            "Вернер", "Вернеру", "Вернере", "Вернером",
+            "Вера", "Верой", "Вере", "Веру",
+            "Кавказ", "Кавказе", "Кавказу",
             "роман", "книга", "глава", "часть", "сюжет",
             "герой", "персонаж", "история", "смерть", "любовь",
-            "дуэль", "судьба", "характер", "поступок", "чувства"
+            "дуэль", "судьба", "характер", "поступок", "чувства",
+            "кто ты", "ты кто", "представься", "как тебя зовут"
+
     };
 
     public String getAnswerFromModel(String question, Book book, Character character, List<MessageDto> history) {
@@ -66,12 +72,12 @@ public class ModelChatService {
                 question, book.getTitle(), character.getName());
 
         // 1. Поиск чанков
-        List<Document> chunks = findRelevantChunks(question, book.getId(), character.getName());
+        List<Document> chunks = findRelevantChunks(question, book.getId()/*, character.getName()*/);
         log.info("Найдено чанков: {}", chunks.size());
 
         // 2. Формируем контекст и историю
         String context = buildContext(chunks);
-//        log.info("Контекст: {}", context);
+        log.info("Контекст: {}", context);
         String historyText = buildHistoryText(history, character.getName());
         // 3. Определяем тип вопроса
         DialogMode mode = determineDialogMode(question, chunks, history);
@@ -85,14 +91,9 @@ public class ModelChatService {
         PromptData promptData = buildPrompt(mode, question, book, character, context, historyText, history);
 
         // 5. Отправляем запрос
-//        answer = chatClient.prompt()
-//                .system(promptData.system())
-//                .user(promptData.user())
-//                .call()
-//                .content();
         ResponseCreateParams params = ResponseCreateParams.builder()
                 .model(modelName)
-                .temperature(0.2)
+                .temperature(0.3)
                 .instructions(promptData.system)
                 .input(promptData.user)
                 .maxOutputTokens(1500)
@@ -100,12 +101,8 @@ public class ModelChatService {
                         .effort(ReasoningEffort.NONE)
                         .build())
                 .build();
-//        log.info("promt_system >>> {}", promptData.system);
-//        log.info("promt_user >>> {}", promptData.user);
 
         Response response = chatClient.responses().create(params);
-
-//        log.info("RESPONSE >>> {}", response);
 
         answer = response.output().stream()
                 .filter(el -> el.message().isPresent())
@@ -115,7 +112,6 @@ public class ModelChatService {
                 .map(ResponseOutputText::text)
                 .findFirst()
                 .get();
-//                .orElse("Не удалось получить ответ");
 
 
         log.info("Модель ответила за: {} ms", System.currentTimeMillis() - start);
@@ -172,7 +168,6 @@ public class ModelChatService {
 //        return new PromptData(system, user);
 //    }
 
-
     // Режим 1: Свободный диалог
     private PromptData buildFreeDialog(String question,
                                        Book book,
@@ -190,7 +185,8 @@ public class ModelChatService {
                         5. Отвечай кратко (1 предложение).
                         6. НЕ используй звёздочки, подчёркивания, скобки.
                         7. НЕ копируй свои предыдущие ответы из истории диалога.
-                        8. Используй историю ТОЛЬКО для понимания о чем ранее велся диалог, ОТВЕЧАЙ ПО-НОВОМУ.
+                        8. НЕ философствуй. Отвечай прямо и просто.
+                        9. Используй историю ТОЛЬКО для понимания о чем ранее велся диалог, ОТВЕЧАЙ ПО-НОВОМУ.
                         ИСТОРИЯ ДИАЛОГА:
                         %s
                         """,
@@ -235,8 +231,11 @@ public class ModelChatService {
                         7. Передай ЭМОЦИИ и ЧУВСТВА персонажа, а не просто описание действий.
                         8. Если в контексте есть намёки на чувства — раскрой их.
                         9. Отвечай кратко (1 предложение, не длинные).
-                        10. НЕ используй форматирование.
-                        11. НЕ копируй текст из контекста дословно — переформулируй своими словами.
+                        10. НЕ философствуй. Отвечай прямо и просто.
+                        11. Используй ПРОСТОЙ, РАЗГОВОРНЫЙ язык. Без сложных оборотов.
+                        12. НЕ начинай с "Он", "Она", "Это" — сразу переходи к сути.
+                        13. НЕ используй форматирование.
+                        
                         
                         КОНТЕКСТ:
                         %s
@@ -272,7 +271,7 @@ public class ModelChatService {
         String system = String.format("""
                         Ты — %s, персонаж романа «%s».
                         Читатель спросил о чём-то из книги, но в контексте нет информации.
-                       
+                        
                         ПРАВИЛА:
                         1. Не используй свою базу знаний
                         2. Отвечай ТОЛЬКО от лица %s.
@@ -304,12 +303,34 @@ public class ModelChatService {
         return new PromptData(system, user);
     }
 
-    private List<Document> findRelevantChunks(String question, UUID bookId, String character) {
+    private List<Document> findRelevantChunks(String question, UUID bookId) {
+        String questToLower = question.toLowerCase();
+        List<Character> characters = characterRepository.findAllByBookId(bookId);
+
+        String findQuery = characters.stream()
+                .filter(character -> {
+                    String name = character.getName().toLowerCase();
+                    return questToLower.contains(name)
+                            || questToLower.contains(name + "е")
+                            || questToLower.contains(name + "у")
+                            || questToLower.contains(name + "ой")
+                            || questToLower.contains(name + "ым")
+                            || questToLower.contains(name + "ем")
+                            || questToLower.contains(name + "ою")
+                            || questToLower.contains(name + "на")
+                            || questToLower.contains(name + "ча")
+                            || questToLower.contains(name + "а");
+
+                })
+                .map(Character::getName)
+                .findFirst()
+                .orElse(question);
+
+
         String exp = "bookId == '" + bookId + "'";
-        String searchQuery = question + " " + character;
 
         SearchRequest searchRequest = SearchRequest.builder()
-                .query(searchQuery)
+                .query(findQuery)
                 .filterExpression(exp)
                 .topK(3)
                 .build();
@@ -374,7 +395,7 @@ public class ModelChatService {
 //        if (atAnswer) {
 //            return DialogMode.QUESTION_AT_ANSWER;
 //        }
-        if (isQuestionAboutBook(question) && !chunks.isEmpty()) {
+        if (isQuestionAboutBook(question) && hasContext) {
             return DialogMode.BOOK_RAG;
         }
         if (!isBookQuestion) {
@@ -396,30 +417,14 @@ public class ModelChatService {
         return false;
     }
 
-//    private boolean isNonBookQuestion(String question) {
-//        String lower = question.toLowerCase();
-//        String[] nonBookPatterns = {
-//                "как дела", "как жизнь", "как настроение", "как ты",
-//                "привет", "здравствуй", "добрый день", "доброе утро",
-//                "пока", "до свидания", "спокойной ночи",
-//                "как погода", "что нового", "как сам", "как твои"
-//        };
-//        for (String pattern : nonBookPatterns) {
-//            if (lower.contains(pattern)) {
-//                return true;
-//            }
-//        }
-//        return false;
+//    private String retryGetContext(Book book, Character character, List<MessageDto> history) {
+//        String questionReader = history.get(history.size() - 2).getText();
+//        String answerModel = history.getLast().getText();
+//        log.info("Вопрос: {} на ответ: {}", questionReader, answerModel);
+//
+//        // 1. Поиск чанков
+//        List<Document> chunks = findRelevantChunks(questionReader, book.getId(), character.getName());
+//        return buildContext(chunks);
 //    }
-
-    private String retryGetContext(Book book, Character character, List<MessageDto> history) {
-        String questionReader = history.get(history.size() - 2).getText();
-        String answerModel = history.getLast().getText();
-        log.info("Вопрос: {} на ответ: {}", questionReader, answerModel);
-
-        // 1. Поиск чанков
-        List<Document> chunks = findRelevantChunks(questionReader, book.getId(), character.getName());
-        return buildContext(chunks);
-    }
 }
 
