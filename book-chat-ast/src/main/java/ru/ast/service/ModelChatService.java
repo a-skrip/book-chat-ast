@@ -1,11 +1,16 @@
 package ru.ast.service;
 
-import lombok.AllArgsConstructor;
+import com.openai.client.OpenAIClient;
+import com.openai.models.Reasoning;
+import com.openai.models.ReasoningEffort;
+import com.openai.models.responses.Response;
+import com.openai.models.responses.ResponseCreateParams;
+import com.openai.models.responses.ResponseOutputText;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.ast.dto.MessageDto;
 import ru.ast.entity.Book;
@@ -14,20 +19,39 @@ import ru.ast.enums.MessageRole;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@AllArgsConstructor
+//@AllArgsConstructor
 public class ModelChatService {
 
-    private final ChatClient chatClient;
+    private final OpenAIClient chatClient;
+    private final String modelName;
     private final VectorStore vectorStore;
 
+    public ModelChatService(
+            @Qualifier("yandexOpenAIClient") OpenAIClient chatClient,
+            @Qualifier("yandexModelName") String modelName,
+            VectorStore vectorStore
+
+    ) {
+        this.chatClient = chatClient;
+        this.modelName = modelName;
+        this.vectorStore = vectorStore;
+    }
+
     private static final String[] BOOK_KEYWORDS = {
-            "Бэла", "Печорин", "Максим Максимыч", "Казбич",
-            "княжна Мери", "Грушницкий", "Вернер", "Вера",
+            "Бэла","Бэлу","Бэле","Бэлой", "Бэлою",
+            "Печорин","Печорине","Печорина","Печорину","Печориным",
+            "Максим Максимыч","Максим Максимыча","Максим Максимыче","Максим Максимычу","Максим Максимычем",
+            "Казбич","Казбича","Казбичу","Казбиче","Казбичем",
+            "Азамат","Азамату","Азаматом","Азамате",
+            "Григорий Александрович",
+            "княжна", "княжне","княжной","княжну",
+            "Грушницкий","Грушницкому","Грушницком",
+            "Вернер","Вернеру","Вернере","Вернером",
+            "Вера", "Верой","Вере","Веру",
             "роман", "книга", "глава", "часть", "сюжет",
             "герой", "персонаж", "история", "смерть", "любовь",
             "дуэль", "судьба", "характер", "поступок", "чувства"
@@ -52,19 +76,41 @@ public class ModelChatService {
         DialogMode mode = determineDialogMode(question, chunks, history);
         log.info("🎯 Режим диалога: {}", mode);
 
-        if (mode.equals(DialogMode.QUESTION_AT_ANSWER)) {
-            log.info("Перезапрос контекста");
-            context = retryGetContext(book, character, history);
-        }
+//        if (mode.equals(DialogMode.QUESTION_AT_ANSWER)) {
+//            log.info("Перезапрос контекста");
+//            context = retryGetContext(book, character, history);
+//        }
         // 4. Формируем промпт
         PromptData promptData = buildPrompt(mode, question, book, character, context, historyText, history);
 
         // 5. Отправляем запрос
-        answer = chatClient.prompt()
-                .system(promptData.system())
-                .user(promptData.user())
-                .call()
-                .content();
+//        answer = chatClient.prompt()
+//                .system(promptData.system())
+//                .user(promptData.user())
+//                .call()
+//                .content();
+        ResponseCreateParams params = ResponseCreateParams.builder()
+                .model(modelName)
+                .temperature(0.2)
+                .instructions(promptData.system)
+                .input(promptData.user)
+                .maxOutputTokens(1500)
+                .reasoning(Reasoning.builder()
+                        .effort(ReasoningEffort.NONE)
+                        .build())
+                .build();
+        Response response = chatClient.responses().create(params);
+
+        answer = response.output().stream()
+                .filter(el -> el.message().isPresent())
+                .map(el -> el.message().get())
+                .flatMap(rom -> rom.content().stream())
+                .map(c -> c.outputText().get())
+                .map(ResponseOutputText::text)
+                .findFirst()
+                .get();
+//                .orElse("Не удалось получить ответ");
+
 
         log.info("Модель ответила за: {} ms", System.currentTimeMillis() - start);
         log.info("Ответ: {}", answer);
@@ -78,47 +124,47 @@ public class ModelChatService {
             case FREE_DIALOG -> buildFreeDialog(question, book, character, historyText);
             case BOOK_RAG -> buildRagDialog(question, book, character, context, historyText);
             case BOOK_FALLBACK -> buildFallbackDialog(question, book, character, historyText);
-            case QUESTION_AT_ANSWER -> buildQuestionAndAnswerDialog(question, book, character, context, history);
+//            case QUESTION_AT_ANSWER -> buildQuestionAndAnswerDialog(question, book, character, context, history);
         };
     }
 
-    private PromptData buildQuestionAndAnswerDialog(String question,
-                                                    Book book,
-                                                    Character character,
-                                                    String context,
-                                                    List<MessageDto> history) {
-        String system = String.format("""
-                        Ты — %s, персонаж книги «%s».
-                        Сейчас читатель задал вопрос: "%s" по твоему ответу "%s".
-                        
-                        ПРАВИЛА:
-                        1. Отвечай от лица %s.
-                        2. Контекст на основании которого ты дал ответ будет передан в контексте
-                        3. Ответь на вопрос читателя почему ты так ответил опираясь на контекст
-                        4. Ответь коротко - 1 предложение
-                        4. НЕ используй звёздочки, подчёркивания, скобки.
-                        
-                        КОНТЕКСТ:
-                        %s
-                        """,
-                character.getName(),
-                book.getTitle(),
-                question,
-                history.getLast().getText(),
-                character.getName(),
-                context
-        );
-        String user = String.format("""
-                        ВОПРОС:
-                        %s
-                        ОТВЕТ ОТ ЛИЦА %s:
-                        
-                        """,
-                question,
-                character.getName()
-        );
-        return new PromptData(system, user);
-    }
+//    private PromptData buildQuestionAndAnswerDialog(String question,
+//                                                    Book book,
+//                                                    Character character,
+//                                                    String context,
+//                                                    List<MessageDto> history) {
+//        String system = String.format("""
+//                        Ты — %s, персонаж книги «%s».
+//                        Сейчас читатель задал вопрос: "%s" по твоему ответу "%s".
+//
+//                        ПРАВИЛА:
+//                        1. Отвечай от лица %s.
+//                        2. Контекст на основании которого ты дал ответ будет передан в контексте
+//                        3. Ответь на вопрос читателя почему ты так ответил опираясь на контекст
+//                        4. Ответь коротко - 1 предложение
+//                        4. НЕ используй звёздочки, подчёркивания, скобки.
+//
+//                        КОНТЕКСТ:
+//                        %s
+//                        """,
+//                character.getName(),
+//                book.getTitle(),
+//                question,
+//                history.getLast().getText(),
+//                character.getName(),
+//                context
+//        );
+//        String user = String.format("""
+//                        ВОПРОС:
+//                        %s
+//                        ОТВЕТ ОТ ЛИЦА %s:
+//
+//                        """,
+//                question,
+//                character.getName()
+//        );
+//        return new PromptData(system, user);
+//    }
 
 
     // Режим 1: Свободный диалог
@@ -281,42 +327,42 @@ public class ModelChatService {
                 .collect(Collectors.joining("\n"));
     }
 
-    private boolean hasQuestionAtAnswer(List<MessageDto> history, String question) {
-        String regex = "[^А-Яа-яЁё]+";
-        Pattern pattern = Pattern.compile(regex);
-        String[] splitQuestion = question.split(pattern.toString());
-        MessageDto messageDto = history.getLast();
-        String answerFromModel = messageDto.getText();
-        String[] splitAnswer = answerFromModel.split(regex);
-
-        for (String wordQuestion : splitQuestion) {
-            String questionLowerCase = wordQuestion.toLowerCase();
-            for (String wordAnswer : splitAnswer) {
-                String answerLowerCase = wordAnswer.toLowerCase();
-                if (questionLowerCase.equals(answerLowerCase)) {
-                    log.info("{} >>> {}", wordQuestion, wordAnswer);
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+//    private boolean hasQuestionAtAnswer(List<MessageDto> history, String question) {
+//        String regex = "[^А-Яа-яЁё]+";
+//        Pattern pattern = Pattern.compile(regex);
+//        String[] splitQuestion = question.split(pattern.toString());
+//        MessageDto messageDto = history.getLast();
+//        String answerFromModel = messageDto.getText();
+//        String[] splitAnswer = answerFromModel.split(regex);
+//
+//        for (String wordQuestion : splitQuestion) {
+//            String questionLowerCase = wordQuestion.toLowerCase();
+//            for (String wordAnswer : splitAnswer) {
+//                String answerLowerCase = wordAnswer.toLowerCase();
+//                if (questionLowerCase.equals(answerLowerCase)) {
+//                    log.info("{} >>> {}", wordQuestion, wordAnswer);
+//                    return true;
+//                }
+//            }
+//        }
+//        return false;
+//    }
 
     private enum DialogMode {
         FREE_DIALOG,
         BOOK_RAG,
-        BOOK_FALLBACK,
-        QUESTION_AT_ANSWER
+        BOOK_FALLBACK
+//        QUESTION_AT_ANSWER
     }
 
     private DialogMode determineDialogMode(String question, List<Document> chunks, List<MessageDto> history) {
         boolean isBookQuestion = isQuestionAboutBook(question);
         boolean hasContext = !chunks.isEmpty();
-        boolean atAnswer = hasQuestionAtAnswer(history, question);
+//        boolean atAnswer = hasQuestionAtAnswer(history, question);
 
-        if (atAnswer) {
-            return DialogMode.QUESTION_AT_ANSWER;
-        }
+//        if (atAnswer) {
+//            return DialogMode.QUESTION_AT_ANSWER;
+//        }
         if (isBookQuestion && hasContext) {
             return DialogMode.BOOK_RAG;
         }
@@ -336,9 +382,24 @@ public class ModelChatService {
                 return true;
             }
         }
-        // Дополнительная проверка: есть ли слово "книга" или "роман"
-        return lower.contains("книг") || lower.contains("роман");
+        return false;
     }
+
+//    private boolean isNonBookQuestion(String question) {
+//        String lower = question.toLowerCase();
+//        String[] nonBookPatterns = {
+//                "как дела", "как жизнь", "как настроение", "как ты",
+//                "привет", "здравствуй", "добрый день", "доброе утро",
+//                "пока", "до свидания", "спокойной ночи",
+//                "как погода", "что нового", "как сам", "как твои"
+//        };
+//        for (String pattern : nonBookPatterns) {
+//            if (lower.contains(pattern)) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
     private String retryGetContext(Book book, Character character, List<MessageDto> history) {
         String questionReader = history.get(history.size() - 2).getText();

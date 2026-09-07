@@ -3,16 +3,21 @@ package ru.ast.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
+import com.openai.client.OpenAIClient;
+import com.openai.models.Reasoning;
+import com.openai.models.ReasoningEffort;
+import com.openai.models.responses.Response;
+import com.openai.models.responses.ResponseCreateParams;
+import com.openai.models.responses.ResponseOutputText;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.ast.dto.CharacterDto;
-import ru.ast.dto.response.CharactersResponseDto;
 import ru.ast.dto.request.CharacterRequestDto;
+import ru.ast.dto.response.CharactersResponseDto;
 import ru.ast.entity.Book;
 import ru.ast.entity.Character;
 import ru.ast.exceptions.BookNotFoundException;
@@ -28,16 +33,32 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
-@AllArgsConstructor
+//@AllArgsConstructor
 @Service
 public class CharacterService {
 
-    private final ChatClient chatClient;
+    private final OpenAIClient chatClient;
+    private final String modelName;
     private final VectorStore vectorStore;
     private final CharacterRepository characterRepository;
     private final ObjectMapper objectMapper;
     private final BookRepository bookRepository;
 
+    public CharacterService(
+            @Qualifier("yandexOpenAIClient") OpenAIClient chatClient,
+            @Qualifier("yandexModelName") String modelName,
+            VectorStore vectorStore,
+            CharacterRepository characterRepository,
+            ObjectMapper objectMapper,
+            BookRepository bookRepository
+    ) {
+        this.chatClient = chatClient;
+        this.modelName = modelName;
+        this.vectorStore = vectorStore;
+        this.characterRepository = characterRepository;
+        this.objectMapper = objectMapper;
+        this.bookRepository = bookRepository;
+    }
 
     public CharactersResponseDto extractCharacters(UUID bookId) {
         boolean existCharacters = characterRepository.existsCharactersByBookId(bookId);
@@ -178,11 +199,34 @@ public class CharacterService {
                 Контекст:
                 %s
                 """, context);
-        String content = chatClient.prompt()
-                .system(system)
-                .user(user)
-                .call()
-                .content();
+//        String content = chatClient.prompt()
+//                .system(system)
+//                .user(user)
+//                .call()
+//                .content();
+        PromptData promptData = new PromptData(system, user);
+
+        ResponseCreateParams params = ResponseCreateParams.builder()
+                .model(modelName)
+                .temperature(0.3)
+                .instructions(promptData.system)
+                .input(promptData.user)
+                .maxOutputTokens(1500)
+                .reasoning(Reasoning.builder()
+                        .effort(ReasoningEffort.NONE)
+                        .build())
+                .build();
+        Response response = chatClient.responses().create(params);
+
+        String content = response.output().stream()
+                .filter(el -> el.message().isPresent())
+                .map(el -> el.message().get())
+                .flatMap(rom -> rom.content().stream())
+                .map(c -> c.outputText().get())
+                .map(ResponseOutputText::text)
+                .findFirst()
+                .get();
+
         log.info("Ответ на запрос извлечения персонажей: \n {}", content);
         return content;
     }
@@ -200,5 +244,8 @@ public class CharacterService {
                 .build();
 
         return vectorStore.similaritySearch(searchRequest);
+    }
+
+    private record PromptData(String system, String user) {
     }
 }

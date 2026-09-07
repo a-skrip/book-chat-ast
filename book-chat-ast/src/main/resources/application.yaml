@@ -1,22 +1,23 @@
 server:
   port: 8088
 
+yandex:
+  base-url: ${YANDEX_BASE_URL}
+  api-key: ${YANDEX_API_KEY}
+  folder: ${YANDEX_FOLDER}
+  model: ${YANDEX_MODEL}
+
+embedding:
+  base-url: http://localhost:8082
+  api-key: dummy-key
+
 spring:
+  main:
+    allow-bean-definition-overriding: true
   application:
     name: book-chat
 
   ai:
-    mistralai:
-      base-url: https://api.mistral.ai
-      api-key: ${MISTRAL_API_KEY}
-      chat:
-        options:
-          model: mistral-medium-latest
-          temperature: 0.2
-          max-tokens: 256
-      embedding:
-        base-url: http://localhost:8082
-        api-key: dummy-key
     vectorstore:
       pgvector:
         initialize-schema: true
