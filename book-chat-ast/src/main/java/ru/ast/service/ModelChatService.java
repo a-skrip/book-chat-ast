@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import ru.ast.dto.MessageDto;
 import ru.ast.entity.Book;
 import ru.ast.entity.Character;
+import ru.ast.enums.DialogMode;
 import ru.ast.enums.MessageRole;
 import ru.ast.repository.CharacterRepository;
 
@@ -72,7 +73,7 @@ public class ModelChatService {
                 question, book.getTitle(), character.getName());
 
         // 1. Поиск чанков
-        List<Document> chunks = findRelevantChunks(question, book.getId()/*, character.getName()*/);
+        List<Document> chunks = findRelevantChunks(question, book.getId());
         log.info("Найдено чанков: {}", chunks.size());
 
         // 2. Формируем контекст и историю
@@ -83,11 +84,6 @@ public class ModelChatService {
         DialogMode mode = determineDialogMode(question, chunks, history);
         log.info("🎯 Режим диалога: {}", mode);
 
-//        if (mode.equals(DialogMode.QUESTION_AT_ANSWER)) {
-//            log.info("Перезапрос контекста");
-//            context = retryGetContext(book, character, history);
-//        }
-        // 4. Формируем промпт
         PromptData promptData = buildPrompt(mode, question, book, character, context, historyText, history);
 
         // 5. Отправляем запрос
@@ -126,47 +122,8 @@ public class ModelChatService {
             case FREE_DIALOG -> buildFreeDialog(question, book, character, historyText);
             case BOOK_RAG -> buildRagDialog(question, book, character, context, historyText);
             case BOOK_FALLBACK -> buildFallbackDialog(question, book, character, historyText);
-//            case QUESTION_AT_ANSWER -> buildQuestionAndAnswerDialog(question, book, character, context, history);
         };
     }
-
-//    private PromptData buildQuestionAndAnswerDialog(String question,
-//                                                    Book book,
-//                                                    Character character,
-//                                                    String context,
-//                                                    List<MessageDto> history) {
-//        String system = String.format("""
-//                        Ты — %s, персонаж книги «%s».
-//                        Сейчас читатель задал вопрос: "%s" по твоему ответу "%s".
-//
-//                        ПРАВИЛА:
-//                        1. Отвечай от лица %s.
-//                        2. Контекст на основании которого ты дал ответ будет передан в контексте
-//                        3. Ответь на вопрос читателя почему ты так ответил опираясь на контекст
-//                        4. Ответь коротко - 1 предложение
-//                        4. НЕ используй звёздочки, подчёркивания, скобки.
-//
-//                        КОНТЕКСТ:
-//                        %s
-//                        """,
-//                character.getName(),
-//                book.getTitle(),
-//                question,
-//                history.getLast().getText(),
-//                character.getName(),
-//                context
-//        );
-//        String user = String.format("""
-//                        ВОПРОС:
-//                        %s
-//                        ОТВЕТ ОТ ЛИЦА %s:
-//
-//                        """,
-//                question,
-//                character.getName()
-//        );
-//        return new PromptData(system, user);
-//    }
 
     // Режим 1: Свободный диалог
     private PromptData buildFreeDialog(String question,
@@ -182,7 +139,7 @@ public class ModelChatService {
                         2. ОБЯЗАТЕЛЬНО обращайся к читателю на «ТЫ». НИКОГДА не используй «ВЫ».
                         3. Поддерживай естественный диалог.
                         4. Будь вежлив(а) и дружелюбен(на).
-                        5. Отвечай кратко (1 предложение).
+                        5. Отвечай кратко (1 короткое предложение).
                         6. НЕ используй звёздочки, подчёркивания, скобки.
                         7. НЕ копируй свои предыдущие ответы из истории диалога.
                         8. НЕ философствуй. Отвечай прямо и просто.
@@ -217,7 +174,7 @@ public class ModelChatService {
 
         String system = String.format("""
                         Ты — %s, персонаж романа «%s».
-                        
+                        Читатель задал вопрос %s
                         ТВОЙ ХАРАКТЕР:
                         %s
                         
@@ -230,18 +187,15 @@ public class ModelChatService {
                         6. Если вопрос о чувствах персонажа — ищи намёки, действия, эмоции в контексте.
                         7. Передай ЭМОЦИИ и ЧУВСТВА персонажа, а не просто описание действий.
                         8. Если в контексте есть намёки на чувства — раскрой их.
-                        9. Отвечай кратко (1 предложение, не длинные).
-                        10. НЕ философствуй. Отвечай прямо и просто.
-                        11. Используй ПРОСТОЙ, РАЗГОВОРНЫЙ язык. Без сложных оборотов.
-                        12. НЕ начинай с "Он", "Она", "Это" — сразу переходи к сути.
-                        13. НЕ используй форматирование.
-                        
+                        9. Отвечай кратко (1 короткое предложение).
+                        10. НЕ используй форматирование.
                         
                         КОНТЕКСТ:
                         %s
                         """,
                 character.getName(),
                 book.getTitle(),
+                question,
                 character.getPromptStyle(),
                 character.getName(),
                 context
@@ -276,10 +230,11 @@ public class ModelChatService {
                         1. Не используй свою базу знаний
                         2. Отвечай ТОЛЬКО от лица %s.
                         3. ОБЯЗАТЕЛЬНО обращайся к читателю на «ТЫ». НИКОГДА не используй «ВЫ».
-                        4. Посмотри историю диалога, возможно там есть ответ
-                        5. Если в истории диалога эта тема не обуждалась — скажи: «Я не знаю, в книге об этом не сказано».
-                        6. НЕ выдумывай.
-                        7. НЕ используй форматирование.
+                        4. Отвечай кратко (1 короткое предложение).
+                        5. Посмотри историю диалога, возможно там есть ответ
+                        6. Если в истории диалога эта тема не обуждалась — скажи: «Я не знаю, в книге об этом не сказано».
+                        7. НЕ выдумывай.
+                        8. НЕ используй форматирование.
                         """,
                 character.getName(),
                 book.getTitle(),
@@ -359,42 +314,11 @@ public class ModelChatService {
                 .collect(Collectors.joining("\n"));
     }
 
-//    private boolean hasQuestionAtAnswer(List<MessageDto> history, String question) {
-//        String regex = "[^А-Яа-яЁё]+";
-//        Pattern pattern = Pattern.compile(regex);
-//        String[] splitQuestion = question.split(pattern.toString());
-//        MessageDto messageDto = history.getLast();
-//        String answerFromModel = messageDto.getText();
-//        String[] splitAnswer = answerFromModel.split(regex);
-//
-//        for (String wordQuestion : splitQuestion) {
-//            String questionLowerCase = wordQuestion.toLowerCase();
-//            for (String wordAnswer : splitAnswer) {
-//                String answerLowerCase = wordAnswer.toLowerCase();
-//                if (questionLowerCase.equals(answerLowerCase)) {
-//                    log.info("{} >>> {}", wordQuestion, wordAnswer);
-//                    return true;
-//                }
-//            }
-//        }
-//        return false;
-//    }
-
-    private enum DialogMode {
-        FREE_DIALOG,
-        BOOK_RAG,
-        BOOK_FALLBACK
-//        QUESTION_AT_ANSWER
-    }
 
     private DialogMode determineDialogMode(String question, List<Document> chunks, List<MessageDto> history) {
         boolean isBookQuestion = isQuestionAboutBook(question);
         boolean hasContext = !chunks.isEmpty();
-//        boolean atAnswer = hasQuestionAtAnswer(history, question);
 
-//        if (atAnswer) {
-//            return DialogMode.QUESTION_AT_ANSWER;
-//        }
         if (isQuestionAboutBook(question) && hasContext) {
             return DialogMode.BOOK_RAG;
         }
@@ -417,14 +341,5 @@ public class ModelChatService {
         return false;
     }
 
-//    private String retryGetContext(Book book, Character character, List<MessageDto> history) {
-//        String questionReader = history.get(history.size() - 2).getText();
-//        String answerModel = history.getLast().getText();
-//        log.info("Вопрос: {} на ответ: {}", questionReader, answerModel);
-//
-//        // 1. Поиск чанков
-//        List<Document> chunks = findRelevantChunks(questionReader, book.getId(), character.getName());
-//        return buildContext(chunks);
-//    }
 }
 
