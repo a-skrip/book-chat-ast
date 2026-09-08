@@ -13,7 +13,7 @@ import ru.ast.enums.MessageRole;
 import ru.ast.mapper.MessagesMapper;
 import ru.ast.repository.ChatRepository;
 import ru.ast.repository.MessageRepository;
-import ru.ast.util.MistralHealthIndicator;
+//import ru.ast.util.MistralHealthIndicator;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,14 +27,14 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final ChatRepository chatRepository;
     private final ModelChatService modelService;
-    private final MistralHealthIndicator healthIndicator;
+//    private final MistralHealthIndicator healthIndicator;
 
     @Transactional
     protected Message sendQuestionAndSaveAnswer(Chat chat, String message, Book book, Character character) {
         Message answer = new Message();
-        boolean available = healthIndicator.isAvailable();
-        if (available) {
-            try {
+//        boolean available = healthIndicator.isAvailable();
+//        if (available) {
+//            try {
                 log.info("Получение истории");
                 // 1. Получаем историю для модели (ДО сохранения вопроса)
                 List<MessageDto> chatHistoryForModel = getChatHistoryForModel(chat.getId());
@@ -57,13 +57,13 @@ public class MessageService {
                         question.getText(),
                         answer.getText(),
                         chat.getId());
-            } catch (Exception e) {
-                log.error("❌ Ошибка при получении ответа от модели: {}", e.getMessage(), e);
-                throw new RuntimeException("Не удалось получить ответ от модели", e);
-            }
-        } else {
-            answer.setText("Подожди немного, мне надо подумать...");
-        }
+//            } catch (Exception e) {
+//                log.error("❌ Ошибка при получении ответа от модели: {}", e.getMessage(), e);
+//                throw new RuntimeException("Не удалось получить ответ от модели", e);
+//            }
+//        } else {
+//            answer.setText("Подожди немного, мне надо подумать...");
+//        }
 
         return answer;
     }
