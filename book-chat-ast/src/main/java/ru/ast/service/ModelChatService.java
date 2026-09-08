@@ -281,7 +281,9 @@ public class ModelChatService {
                 .findFirst()
                 .orElse(question);
 
-
+        if (findQuery.contains("Кавказ")) {
+            findQuery = "Кавказ";
+        }
         String exp = "bookId == '" + bookId + "'";
 
         SearchRequest searchRequest = SearchRequest.builder()
