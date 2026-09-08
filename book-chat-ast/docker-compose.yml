@@ -28,15 +28,21 @@ services:
       dockerfile: Dockerfile
     container_name: java_app
     environment:
+      SPRINGDOC_API_DOCS_ENABLED: false
+      SPRINGDOC_SWAGGER_UI_ENABLED: false
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/books_db
       SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       SPRING_PROFILES_ACTIVE: prod
       MISTRAL_API_KEY: ${MISTRAL_API_KEY}
       SERVER_PORT: 8080
-      SPRING_AI_MISTRALAI_EMBEDDING_BASE_URL: http://host.docker.internal:8082
-      SPRING_AI_MISTRALAI_EMBEDDING_API_KEY: dummy-key
-      SPRING_AI_MISTRALAI_EMBEDDING_OPTIONS_MODEL: qwen3-embedding-0.6b-q4_k_m
+      YANDEX_API_KEY: ${YANDEX_API_KEY}
+      YANDEX_FOLDER: ${YANDEX_FOLDER}
+      YANDEX_MODEL: ${YANDEX_MODEL}
+      YANDEX_BASE_URL: ${YANDEX_BASE_URL}
+      EMBEDDING_BASE_URL: http://host.docker.internal:8082
+      EMBEDDING_API_KEY: dummy-key
+
     ports:
       - "8080:8080"
     depends_on:
