@@ -28,8 +28,6 @@ services:
       dockerfile: Dockerfile
     container_name: java_app
     environment:
-      SPRINGDOC_API_DOCS_ENABLED: false
-      SPRINGDOC_SWAGGER_UI_ENABLED: false
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/books_db
       SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
