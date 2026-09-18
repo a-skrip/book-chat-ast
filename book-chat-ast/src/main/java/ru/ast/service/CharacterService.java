@@ -33,7 +33,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
-//@AllArgsConstructor
 @Service
 public class CharacterService {
 
@@ -179,7 +178,6 @@ public class CharacterService {
         String context = relevantChunks.stream()
                 .map(Document::getText)
                 .collect(Collectors.joining("\n\n-----\n\n"));
-        //TODO проверить использует ли модель свою базу знаний
         String system = """
                 Извлеки только имена персонажей художественного произведения из фрагментов ниже.
                                     Нужны только люди и действующие герои текста.
@@ -199,11 +197,6 @@ public class CharacterService {
                 Контекст:
                 %s
                 """, context);
-//        String content = chatClient.prompt()
-//                .system(system)
-//                .user(user)
-//                .call()
-//                .content();
         PromptData promptData = new PromptData(system, user);
 
         ResponseCreateParams params = ResponseCreateParams.builder()

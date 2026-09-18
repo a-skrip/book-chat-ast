@@ -13,7 +13,6 @@ import ru.ast.enums.MessageRole;
 import ru.ast.mapper.MessagesMapper;
 import ru.ast.repository.ChatRepository;
 import ru.ast.repository.MessageRepository;
-//import ru.ast.util.MistralHealthIndicator;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,44 +26,32 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final ChatRepository chatRepository;
     private final ModelChatService modelService;
-//    private final MistralHealthIndicator healthIndicator;
 
     @Transactional
     protected Message sendQuestionAndSaveAnswer(Chat chat, String message, Book book, Character character) {
         Message answer = new Message();
-//        boolean available = healthIndicator.isAvailable();
-//        if (available) {
-//            try {
-                log.info("Получение истории");
-                // 1. Получаем историю для модели (ДО сохранения вопроса)
-                List<MessageDto> chatHistoryForModel = getChatHistoryForModel(chat.getId());
-                // 2. Получаем ответ от модели
-                String answerFromModel = modelService.getAnswerFromModel(
-                        message,
-                        book,
-                        character,
-                        chatHistoryForModel
-                );
-                // 3. ТОЛЬКО ПОСЛЕ успешного получения ответа — сохраняем оба сообщения
-                Message question = createMessage(chat, MessageRole.USER, message);
-                messageRepository.save(question);
+//
+        log.info("Получение истории");
+        List<MessageDto> chatHistoryForModel = getChatHistoryForModel(chat.getId());
 
-                answer = createMessage(chat, MessageRole.SYSTEM, answerFromModel);
-                messageRepository.save(answer);
+        String answerFromModel = modelService.getAnswerFromModel(
+                message,
+                book,
+                character,
+                chatHistoryForModel
+        );
 
-                chatRepository.save(chat);
-                log.info("Сохранены вопрос: {} | ответ: {} для chatId: {}",
-                        question.getText(),
-                        answer.getText(),
-                        chat.getId());
-//            } catch (Exception e) {
-//                log.error("❌ Ошибка при получении ответа от модели: {}", e.getMessage(), e);
-//                throw new RuntimeException("Не удалось получить ответ от модели", e);
-//            }
-//        } else {
-//            answer.setText("Подожди немного, мне надо подумать...");
-//        }
+        Message question = createMessage(chat, MessageRole.USER, message);
+        messageRepository.save(question);
 
+        answer = createMessage(chat, MessageRole.SYSTEM, answerFromModel);
+        messageRepository.save(answer);
+
+        chatRepository.save(chat);
+        log.info("Сохранены вопрос: {} | ответ: {} для chatId: {}",
+                question.getText(),
+                answer.getText(),
+                chat.getId());
         return answer;
     }
 
