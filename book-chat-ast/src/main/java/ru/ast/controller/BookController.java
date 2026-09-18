@@ -27,7 +27,7 @@ import java.nio.file.Paths;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("api/books")
+@RequestMapping("/api/books")
 @AllArgsConstructor
 @Tag(name = "Book", description = "API для управления книгами в системе")
 @SecurityRequirement(name = "bearerAuth")
@@ -94,7 +94,6 @@ public class BookController {
             @RequestParam("title") String title) {
 
         try {
-            // Сохраняем файл на сервере
             Path dataPath = Paths.get(DATA_DIR);
             if (!Files.exists(dataPath)) {
                 Files.createDirectories(dataPath);
@@ -104,10 +103,8 @@ public class BookController {
             Path filePath = dataPath.resolve(filename);
             Files.write(filePath, file.getBytes());
 
-            // Создаем DTO с путем к сохраненному файлу
             BookRequestDto bookDto = new BookRequestDto(filePath.toString(), title);
 
-            // Вызываем существующую логику
             return ResponseEntity.ok(bookService.saveBook(bookDto));
 
         } catch (IOException e) {

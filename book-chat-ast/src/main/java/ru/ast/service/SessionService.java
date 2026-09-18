@@ -39,7 +39,6 @@ public class SessionService {
     private final ChatRepository chatRepository;
 
     private static final String SESSION_COOKIE_NAME = "reader_session_id";
-    //    private static final int COOKIE_MAX_AGE = 360; // в минутах
     private static final int COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // в минутах - 1 год
 
 

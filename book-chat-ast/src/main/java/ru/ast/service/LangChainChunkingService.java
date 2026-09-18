@@ -28,16 +28,13 @@ public class LangChainChunkingService {
 
         Document langChainDoc = Document.from(fullText, metadata);
 
-        // 2. Разбиваем на чанки (с overlap)
         List<TextSegment> segments = documentSplitter.split(langChainDoc);
         log.info("Создано {} сегментов с перекрытием", segments.size());
 
         // 3. Конвертируем в Spring AI Document
         List<org.springframework.ai.document.Document> chunks = new ArrayList<>();
         for (TextSegment segment : segments) {
-            // ✅ Правильное преобразование Metadata в Map
 
-            // Копируем все поля из Metadata
             Map<String, Object> chunkMetadata = new HashMap<>(segment.metadata().toMap());
 
             org.springframework.ai.document.Document chunk =
